@@ -1,0 +1,53 @@
+.expediente-card {
+    background-color: #1a1a1a;
+    border-radius: 8px;
+    padding: 1.5rem;
+    color: white;
+    width: 250px; /* Ajustar ancho para mejor visibilidad */
+    height: 300px;
+    text-align: center;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: transform 0.2s;
+    margin: 0; /* Quitamos margen para que el contenedor `gap` lo maneje */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.expediente-card:hover {
+    transform: scale(1.05);
+}
+
+.expediente-card .card-contenido h3 {
+    margin: 0 0 10px;
+    font-size: 1.2rem; /* Un poco más grande para títulos */
+}
+
+.expediente-card .card-contenido p {
+    font-size: 0.9rem;
+    color: #bfbfbf; /* Texto más claro */
+}
+
+.expedientes-container {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 20px;
+    justify-content: flex-start;
+    padding: 20px;
+    overflow-x: auto;
+}
+
+.expedientes-container::-webkit-scrollbar {
+    height: 8px; /* Ajuste del tamaño de la barra de desplazamiento */
+}
+
+.expedientes-container::-webkit-scrollbar-thumb {
+    background-color: #555;
+    border-radius: 10px;
+}
+
+.expedientes-container::-webkit-scrollbar-thumb:hover {
+    background-color: #333;
+}
