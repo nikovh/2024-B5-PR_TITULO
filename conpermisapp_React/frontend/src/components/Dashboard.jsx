@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import ExpedienteModal from "./ExpedienteModal";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase";
 import { signOut } from "firebase/auth";
-import '../styles/Dashboard.css'
+import ExpedienteModal from "./ExpedienteModal";
 import ExpedienteCard from "./ExpedienteCard"
+import '../styles/Dashboard.css'
 
 
 function Dashboard() {
@@ -45,12 +45,6 @@ function Dashboard() {
         }
     }, [user, navigate]);
 
-
-    // Modal
-    const abrirModal = () => setIsModalOpen(true);
-    const cerrarModal = () => setIsModalOpen(false);
-
-    
     const crearExpediente = async (tipo, subtipo) => {
         if (!rutUsuario) {
             alert("Error: No se pudo identificar al usuario.");
@@ -84,6 +78,11 @@ function Dashboard() {
             alert("Error al crear un nuevo expediente");
         }
     };
+
+    // Modal
+    const abrirModal = () => setIsModalOpen(true);
+    const cerrarModal = () => setIsModalOpen(false);
+
 
     const handleLogout = async () => {
         try {

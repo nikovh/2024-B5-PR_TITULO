@@ -7,6 +7,10 @@ import Registro from './components/Registro';
 import ExpedienteFormPage from "./components/ExpedienteFormPage";
 
 
+import ExpedienteDetail from './components/ExpedienteDetail';
+
+
+
 function App() {
   return (
     <BrowserRouter>
@@ -18,7 +22,8 @@ function App() {
           </AccesoProtegido> }
         />
         <Route path="/registro" element={<Registro />} />
-        <Route path="/expediente/nuevo" element={<ExpedienteFormPage />} />
+        <Route path="/expediente" element={<ExpedienteFormPage />} />
+        <Route path="/detalle/:id" element={<ExpedienteDetail />} />
       </Routes>
     </BrowserRouter>
   );
