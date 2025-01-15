@@ -13,9 +13,10 @@ app.use(cors());
 app.use(express.json());
 
 // Rutas
-const expedienteRoutes = require('./routes/expedientes');
-const formularioRoutes = require('./routes/formularios');
-const usuariosRoutes   = require('./routes/usuarios');
+const expedienteRoutes    = require('./routes/expedientes');
+const formularioRoutes    = require('./routes/formularios');
+const usuariosRoutes      = require('./routes/usuarios');
+const propietariosRoutes  = require('./routes/propietarios');
 
 
 // Usa las rutas en el servidor
@@ -26,6 +27,7 @@ const usuariosRoutes   = require('./routes/usuarios');
 app.use('/expedientes', expedienteRoutes);
 app.use('/formularios', formularioRoutes);
 app.use('/usuarios', usuariosRoutes);
+app.use('/propietarios', propietariosRoutes);
 // app.use('auth', authRoutes)
 
 

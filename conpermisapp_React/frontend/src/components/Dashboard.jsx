@@ -28,7 +28,7 @@ function Dashboard() {
                         setNombreUsuario(data.nombre);
                         setRutUsuario(data.rut);
 
-                        //obtener los expeddinete segun rut
+                        //obtener los expeddinete por usuario segun rut
                         fetch(`http://localhost:4000/expedientes?usuario_rut=${data.rut}`)
                             .then((res) => res.json())
                             .then((data) => setExpedientes(data))
@@ -45,13 +45,49 @@ function Dashboard() {
         }
     }, [user, navigate]);
 
-    const crearExpediente = async (tipo, subtipo) => {
+    const crearExpediente = async (tipo, subtipo, propietario) => {
         if (!rutUsuario) {
             alert("Error: No se pudo identificar al usuario.");
             return;
         }
 
         try {
+            //verificar si el propietario existe
+            const propietarioExiste = await fetch(`http://localhost:4000/propietarios/${propietario.rut}`)
+                .then((res) => {
+                    if (!res.ok) {
+                        throw new Error("Error al verificar el propietario");
+                    }
+                    return res.json();
+                })
+                .catch((err) => {
+                    console.error("Error al verificar el propietario:", err);
+                    return null; // Propietario no encontrado
+                });
+
+            // crear al propietario si no existe
+            if (!propietarioExiste) {
+                const crearPropietarioResp = await fetch(`http://localhost:4000/propietarios`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        rut: propietario.rut,
+                        nombre: propietario.nombre,
+                        apellidoPaterno: propietario.apellidoPaterno || null,
+                        apellidoMaterno: propietario.apellidoMaterno || null,
+                        email: propietario.email || null,
+                        telefono: propietario.telefono || null,
+                    }),
+                });
+
+                if (!crearPropietarioResp.ok) {
+                    throw new Error("Error al crear el propietario");
+                }
+            }
+
+            // crear expediente
             const resp = await fetch("http://localhost:4000/expedientes", {
                 method: "POST",
                 headers: {
@@ -61,14 +97,16 @@ function Dashboard() {
                     descripcion: `Nuevo expediente de ${tipo}`,
                     tipo,
                     subtipo,
-                    // Propietario_rut: propietarioRut,
-                    Usuario_rut: rutUsuario,
+                    propietario: {
+                        rut: propietario.rut,
+                    },
+                    usuarioRut: rutUsuario,
                     EstadoExpediente_id: 1, 
                 }),
             });
             if (resp.ok) {
                 const newExpedientes = await fetch(`http://localhost:4000/expedientes?usuario_rut=${rutUsuario}`)
-                    .then((r) => r.json());
+                    .then((res) => res.json());
                 setExpedientes(newExpedientes);
             } else {
                 alert("Error al crear el expediente");
@@ -93,6 +131,10 @@ function Dashboard() {
         }
     };
 
+    const abrirDetalleExpediente = (id) => {
+        navigate(`/detalle/${id}`);
+    };
+
     return (
         <div style={{ padding: '1rem' }}>
             <h1>Bienvenido {nombreUsuario}</h1>
@@ -105,16 +147,21 @@ function Dashboard() {
                 <p>No tienes expedientes registrados</p>
             ) : (
                 <div className="expedientes-container">
-                    <ExpedienteCard onCreate={abrirModal} />
+                    {/* <ExpedienteCard onCreate={abrirModal} /> */}
+                    <ExpedienteCard onCreate={() => setIsModalOpen(true)} />
                     {expedientes.map((expediente) => (
-                        <ExpedienteCard key={expediente.id} expediente={expediente} />
+                        <ExpedienteCard 
+                            key={expediente.id} 
+                            expediente={expediente}
+                            onClick={() => abrirDetalleExpediente(expediente.id)} 
+                        />
                     ))}
                 </div>
             )}
 
             <ExpedienteModal
                 isOpen={isModalOpen}
-                onClose={cerrarModal}
+                onClose={() => setIsModalOpen(false)}
                 onCreate={crearExpediente}
             />
 
