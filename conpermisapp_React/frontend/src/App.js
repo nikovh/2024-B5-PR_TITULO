@@ -6,8 +6,9 @@ import AccesoProtegido from './components/AccesoProtegido';
 import Registro from './components/Registro';
 import ExpedienteFormPage from "./components/ExpedienteFormPage";
 
+import ExpedienteManager from "./components/ExpedienteManager";
+import ExpedienteDetalle from "./components/ExpedienteDetalle";
 
-import ExpedienteDetail from './components/ExpedienteDetail';
 
 
 
@@ -23,7 +24,9 @@ function App() {
         />
         <Route path="/registro" element={<Registro />} />
         <Route path="/expediente" element={<ExpedienteFormPage />} />
-        <Route path="/detalle/:id" element={<ExpedienteDetail />} />
+        <Route path="/expedientes" element={<ExpedienteManager />} />
+        <Route path="/expedientes/:id" element={<ExpedienteDetalle />} />
+
       </Routes>
     </BrowserRouter>
   );

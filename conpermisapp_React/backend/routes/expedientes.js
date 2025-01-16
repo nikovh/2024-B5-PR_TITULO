@@ -24,7 +24,7 @@ router.get('/', async (req, res) => {
         if (usuarioRut) {
             request.input('usuarioRut', sql.VarChar, usuarioRut);
         }
-        
+
         const result = await request.query(query);
         res.status(200).json(result.recordset);
     } catch (error) {
@@ -85,7 +85,7 @@ router.get('/subtipo-expediente', async (req, res) => {
         res.json(result.recordset);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Error al obtener los subtipos de expedientes'});
+        res.status(500).json({ error: 'Error al obtener los subtipos de expedientes' });
     }
 });
 
@@ -101,20 +101,25 @@ router.get('/:id', async (req, res) => {
             .input('id', sql.Int, id) // Usar un parámetro seguro
             .query(`
                 SELECT 
-                    e.id, 
-                    e.fechaCreacion, 
-                    e.descripcion, 
-                    e.tipo, 
-                    e.subtipo, 
-                    e.Propietario_rut, 
-                    e.Usuario_rut, 
-                    e.EstadoExpediente_id,
-                    p.nombre AS propietarioNombre,
-                    p.apellidoPaterno AS propietarioApellidoPaterno,
-                    p.apellidoMaterno AS propietarioApellidoMaterno
+                    e.id AS expedienteId,
+                    e.descripcion,
+                    e.tipo,
+                    e.subtipo,
+                    e.estadoExpedienteId,
+                    e.fechaCreacion,
+                    p.rut AS propietarioRut,
+                    p.nombres AS propietarioNombres,
+                    p.apellidos AS propietarioApellidos,
+                    p.telefono AS propietarioTelefono,
+                    pr.rolSII AS propiedadRolSII,
+                    pr.direccion AS propiedadDireccion,
+                    pr.comuna AS propiedadComuna,
+                    pr.region AS propiedadRegion
                 FROM Expedientes e
-                LEFT JOIN Propietario p ON e.Propietario_rut = p.rut
+                LEFT JOIN Propietario p ON e.propietario_rut = p.rut
+                LEFT JOIN Propiedad pr ON e.propiedad_id = pr.id
                 WHERE e.id = @id
+
             `);
 
         // Si no se encuentra el expediente, retornar un error 404
@@ -129,9 +134,12 @@ router.get('/:id', async (req, res) => {
         res.status(500).json({ error: 'Error al obtener el expediente' });
     }
 });
-  
 
-// // POST crear un nuevo expediente 
+
+
+
+
+//  POST crear un nuevo expediente
 router.post('/', async (req, res) => {
     const {
         descripcion,
@@ -139,11 +147,12 @@ router.post('/', async (req, res) => {
         subtipo,
         propietario,
         usuarioRut,
-        estadoExpedienteId
+        estadoExpedienteId,
+        propiedad,
     } = req.body;
 
-    if (!propietario || !usuarioRut) {
-        return res.status(400).json({ error: "Completa los campos obligatorios." });
+    if (!propietario || !usuarioRut || !propiedad) {
+        return res.status(400).json({ error: "Faltan datos obligatorios." });
     }
 
     try {
@@ -158,53 +167,104 @@ router.post('/', async (req, res) => {
             // Crear propietario si no existe
             await pool.request()
                 .input("rut", sql.VarChar, propietario.rut)
-                .input("nombre", sql.VarChar, propietario.nombre)
-                .input("apellidoPaterno", sql.VarChar, propietario.apellidoPaterno || null)
-                .input("apellidoMaterno", sql.VarChar, propietario.apellidoMaterno || null)
+                .input("nombres", sql.VarChar, propietario.nombres)
+                .input("apellidos", sql.VarChar, propietario.apellidos || null)
                 .input("email", sql.VarChar, propietario.email || null)
                 .input("telefono", sql.Int, propietario.telefono || null)
                 .query(`
                     INSERT INTO Propietario (
-                        rut, 
-                        nombre, 
-                        apellidoPaterno, 
-                        apellidoMaterno, 
-                        email, 
+                        rut,
+                        nombres,
+                        apellidos,
+                        email,
                         telefono
                     ) VALUES (
-                        @rut, 
-                        @nombre, 
-                        @apellidoPaterno, 
-                        @apellidoMaterno, 
-                        @email, 
+                        @rut,
+                        @nombres,
+                        @apellidos,
+                        @email,
                         @telefono
                     )
                 `);
         }
+
+        // Crear la propiedad
+        const resultPropiedad = await pool.request()
+            .input('direccion', sql.VarChar, propiedad.direccion)
+            .input('numero', sql.Int, propiedad.numero)
+            .input('comuna', sql.VarChar, propiedad.comuna)
+            .input('region', sql.VarChar, propiedad.region)
+            .input('rolSII', sql.VarChar, propiedad.rolSII)
+            .query(`
+                INSERT INTO Propiedad (
+                    direccion,
+                    numero,
+                    comuna,
+                    region,
+                    rolSII)
+                OUTPUT Inserted.id
+                VALUES (
+                    @direccion,
+                    @numero,
+                    @comuna,
+                    @region,
+                    @rolSII
+                )
+            `);
+
+        const propiedadId = resultPropiedad.recordset[0].id;
+
+        // // Crear el arquitecto patrocinante
+        // const resultArquitecto = await pool.request()
+        //     .input('nombre', sql.VarChar, arquitectoPatrocinante.nombre)
+        //     .input('rut', sql.VarChar, arquitectoPatrocinante.rut)
+        //     .input('telefono', sql.VarChar, arquitectoPatrocinante.telefono)
+        //     .input('email', sql.VarChar, arquitectoPatrocinante.email)
+        //     .query(`
+        //         INSERT INTO ArquitectoPatrocinante (
+        //             nombre,
+        //             rut,
+        //             telefono,
+        //             email)
+        //         OUTPUT Inserted.id
+        //         VALUES (
+        //             @nombre,
+        //             @rut,
+        //             @telefono,
+        //             @email
+        //         )
+        //     `);
+
+        // const arquitectoId = resultArquitecto.recordset[0].id;
 
         // Crear el expediente
         await pool.request()
             .input("descripcion", sql.VarChar, descripcion)
             .input("tipo", sql.VarChar, tipo)
             .input("subtipo", sql.VarChar, subtipo)
-            .input("propietarioRut", sql.VarChar, propietario.rut)
             .input("usuarioRut", sql.VarChar, usuarioRut)
             .input("estadoExpedienteId", sql.Int, estadoExpedienteId)
+            .input("propietarioRut", sql.VarChar, propietario.rut)
+            .input("propiedadId", sql.Int, propiedadId)
+            // .input("arquitectoId", sql.Int, arquitectoId)
             .query(`
                 INSERT INTO Expedientes (
-                    descripcion, 
-                    tipo, 
-                    subtipo, 
-                    Propietario_rut, 
-                    Usuario_rut, 
-                    EstadoExpediente_id
+                    descripcion,
+                    tipo,
+                    subtipo,
+                    Usuario_rut,
+                    EstadoExpediente_id,
+                    Propietario_rut,
+                    Propiedad_id
                 ) VALUES (
-                    @descripcion, 
-                    @tipo, 
-                    @subtipo, 
-                    @propietarioRut, 
-                    @usuarioRut, 
+                    @descripcion,
+                    @tipo,
+                    @subtipo,
+                    @usuarioRut,
                     @estadoExpedienteId
+                    @propietarioRut,
+                    @propiedadId,
+
                 )
             `);
 
@@ -278,6 +338,100 @@ router.delete('/:id', async (req, res) => {
         res.status(500).json({ error: 'Error al eliminar el expediente' });
     }
 });
+
+
+
+// POST nuevo expediente ajustado a los datos enviados desde el frontend
+router.post('/simple', async (req, res) => {
+    const { propiedad, propietario } = req.body;
+
+    if (!propiedad || !propietario) {
+        return res.status(400).json({ error: "Faltan datos obligatorios: propiedad o propietario." });
+    }
+
+    try {
+        const pool = await getConnection();
+
+        // Verificar si el propietario existe
+        const propietarioExistente = await pool.request()
+            .input("rut", sql.VarChar, propietario.rut)
+            .query("SELECT * FROM Propietario WHERE rut = @rut");
+
+        if (propietarioExistente.recordset.length === 0) {
+            // Crear propietario si no existe
+            await pool.request()
+                .input("rut", sql.VarChar, propietario.rut)
+                .input("nombres", sql.VarChar, propietario.nombres)
+                .input("apellidos", sql.VarChar, propietario.apellidos || null)
+                .input("email", sql.VarChar, propietario.email || null)
+                .input("telefono", sql.Int, propietario.telefono || null)
+                .query(`
+                    INSERT INTO Propietario (
+                        rut,
+                        nombres,
+                        apellidos,
+                        email,
+                        telefono
+                    ) VALUES (
+                        @rut,
+                        @nombres,
+                        @apellidos,
+                        @email,
+                        @telefono
+                    )
+                `);
+        }
+
+        // Crear la propiedad
+        const resultPropiedad = await pool.request()
+            .input("direccion", sql.VarChar, propiedad.direccion)
+            .input("numero", sql.Int, propiedad.numero)
+            .input("comuna", sql.VarChar, propiedad.comuna)
+            .input("region", sql.VarChar, propiedad.region)
+            .input("rolSII", sql.VarChar, propiedad.rolSII)
+            .query(`
+                INSERT INTO Propiedad (
+                    direccion,
+                    numero,
+                    comuna,
+                    region,
+                    rolSII
+                ) OUTPUT Inserted.id VALUES (
+                    @direccion,
+                    @numero,
+                    @comuna,
+                    @region,
+                    @rolSII
+                )
+            `);
+
+        const propiedadId = resultPropiedad.recordset[0].id;
+
+        // Crear el expediente
+        const resultExpediente = await pool.request()
+            .input("propietarioRut", sql.VarChar, propietario.rut)
+            .input("propiedadId", sql.Int, propiedadId)
+            .query(`
+                INSERT INTO Expedientes (
+                    Propietario_rut,
+                    Propiedad_id
+                ) OUTPUT Inserted.id VALUES (
+                    @propietarioRut,
+                    @propiedadId
+                )
+            `);
+
+        const expedienteId = resultExpediente.recordset[0].id;
+
+        res.status(201).json({ message: "Expediente creado exitosamente.", expedienteId });
+    } catch (err) {
+        console.error("Error al crear el expediente:", err);
+        res.status(500).json({ error: "Error al crear el expediente." });
+    }
+});
+
+
+
 
 
 

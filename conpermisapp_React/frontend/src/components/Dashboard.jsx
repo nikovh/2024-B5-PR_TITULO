@@ -31,7 +31,13 @@ function Dashboard() {
                         //obtener los expeddinete por usuario segun rut
                         fetch(`http://localhost:4000/expedientes?usuario_rut=${data.rut}`)
                             .then((res) => res.json())
-                            .then((data) => setExpedientes(data))
+                            .then((data) => {
+                                //orden descendente
+                                const ordenDesc = data.sort((a, b) => 
+                                    new Date(b.fechaCreacion) - new Date(a.fechaCreacion)
+                            );
+                            setExpedientes(ordenDesc);
+                        })
                             .catch((err) => console.error("Error al cargar expedientes:", err));
                     } else {
                         console.error("No se encontró el usuario en la base de datos.");
@@ -74,9 +80,8 @@ function Dashboard() {
                     },
                     body: JSON.stringify({
                         rut: propietario.rut,
-                        nombre: propietario.nombre,
-                        apellidoPaterno: propietario.apellidoPaterno || null,
-                        apellidoMaterno: propietario.apellidoMaterno || null,
+                        nombres: propietario.nombres,
+                        apellidos: propietario.apellidos || null,
                         email: propietario.email || null,
                         telefono: propietario.telefono || null,
                     }),
@@ -100,6 +105,7 @@ function Dashboard() {
                     propietario: {
                         rut: propietario.rut,
                     },
+                    //propietario: propietario.rut //revisar ambas alternativas
                     usuarioRut: rutUsuario,
                     EstadoExpediente_id: 1, 
                 }),
@@ -118,8 +124,8 @@ function Dashboard() {
     };
 
     // Modal
-    const abrirModal = () => setIsModalOpen(true);
-    const cerrarModal = () => setIsModalOpen(false);
+    // const abrirModal = () => setIsModalOpen(true);
+    // const cerrarModal = () => setIsModalOpen(false);
 
 
     const handleLogout = async () => {

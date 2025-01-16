@@ -3,9 +3,8 @@ import React, { useState } from 'react';
 const DatosPropietario = ({ onUpdate }) => {
   const [propietario, setPropietario] = useState({
     rut: '',
-    nombre: '',
-    apellidoPaterno: '',
-    apellidoMaterno: '',
+    nombres: '',
+    apellidos: '',
     email: '',
     telefono: '',
   });
@@ -18,7 +17,6 @@ const DatosPropietario = ({ onUpdate }) => {
 
   return (
     <div>
-      <h3>Datos del Propietario</h3>
       <form>
         <div>
           <label>RUT:</label>
@@ -31,28 +29,19 @@ const DatosPropietario = ({ onUpdate }) => {
           />
         </div>
         <div>
-          <label>Nombre:</label>
+          <label>Nombres:</label>
           <input
-            name="nombre"
-            value={propietario.nombre}
+            name="nombres"
+            value={propietario.nombres}
             onChange={handleChange}
             maxLength={25} 
           />
         </div>
         <div>
-          <label>Apellido Paterno:</label>
+          <label>Apellidos:</label>
           <input
-            name="apellidoPaterno"
-            value={propietario.apellidoPaterno}
-            onChange={handleChange}
-            maxLength={25} 
-          />
-        </div>
-        <div>
-          <label>Apellido Materno:</label>
-          <input
-            name="apellidoMaterno"
-            value={propietario.apellidoMaterno}
+            name="apellidos"
+            value={propietario.apellidos}
             onChange={handleChange}
             maxLength={25} 
           />

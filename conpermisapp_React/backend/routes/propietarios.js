@@ -2,6 +2,21 @@ const express = require('express');
 const { getConnection, sql } = require('../db');
 const router = express.Router();
 
+//GET /propietarios/
+router.get('/', async (req, res) => {
+
+    try {
+        const pool = await getConnection();
+        let query = 'SELECT * FROM Propietario';
+        const request = pool.request();
+        const result = await request.query(query);
+        res.status(200).json(result.recordset);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al obtener propietarios' });
+    }
+});
+
 
 //GET /propietarios/:rut
 // Verificar si un propietario existe por su RUT
@@ -32,9 +47,9 @@ router.get('/:rut', async (req, res) => {
 
 // Crear un nuevo propietario
 router.post('/', async (req, res) => {
-    const { rut, nombre, apellidoPaterno, apellidoMaterno, email, telefono } = req.body;
+    const { rut, nombres, apellidos, email, telefono } = req.body;
 
-    if (!rut || !nombre) {
+    if (!rut || !nombres) {
         return res.status(400).json({ error: 'El RUT y el nombre son obligatorios' });
     }
 
@@ -44,16 +59,15 @@ router.post('/', async (req, res) => {
         // Insertar propietario
         await pool.request()
             .input('rut', sql.VarChar, rut)
-            .input('nombre', sql.VarChar, nombre)
-            .input('apellidoPaterno', sql.VarChar, apellidoPaterno || null)
-            .input('apellidoMaterno', sql.VarChar, apellidoMaterno || null)
+            .input('nombres', sql.VarChar, nombres)
+            .input('apellidos', sql.VarChar, apellidos || null)
             .input('email', sql.VarChar, email || null)
             .input('telefono', sql.Int, telefono || null)
             .query(`
                 INSERT INTO Propietario (
-                    rut, nombre, apellidoPaterno, apellidoMaterno, email, telefono
+                    rut, nombres, apellidos, email, telefono
                 ) VALUES (
-                    @rut, @nombre, @apellidoPaterno, @apellidoMaterno, @email, @telefono
+                    @rut, @nombres, @apellidos, @email, @telefono
                 )
             `);
 
@@ -84,16 +98,15 @@ router.post('/', async (req, res) => {
             // Crear propietario si no existe
             await pool.request()
                 .input('rut', sql.VarChar, propietario.rut)
-                .input('nombre', sql.VarChar, propietario.nombre)
-                .input('apellidoPaterno', sql.VarChar, propietario.apellidoPaterno || null)
-                .input('apellidoMaterno', sql.VarChar, propietario.apellidoMaterno || null)
+                .input('nombres', sql.VarChar, propietario.nombres)
+                .input('apellidos', sql.VarChar, propietario.apellidos || null)
                 .input('email', sql.VarChar, propietario.email || null)
                 .input('telefono', sql.Int, propietario.telefono || null)
                 .query(`
                     INSERT INTO Propietario (
-                        rut, nombre, apellidoPaterno, apellidoMaterno, email, telefono
+                        rut, nombres, apellidos, email, telefono
                     ) VALUES (
-                        @rut, @nombre, @apellidoPaterno, @apellidoMaterno, @email, @telefono
+                        @rut, @nombres, @apellidos, @email, @telefono
                     )
                 `);
         }
