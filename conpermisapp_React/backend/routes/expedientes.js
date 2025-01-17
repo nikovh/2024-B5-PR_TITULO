@@ -193,54 +193,56 @@ router.post('/', async (req, res) => {
 */
 
 
-// POST descripcion y usuario, propietario y propiedad
+// POST descripcion y usuario, propietario
 router.post('/', async (req, res) => {
-    const { descripcion, usuarioEmail, tipo, subtipo, propietario, propiedad } = req.body;
+    const { descripcion, usuarioEmail, tipo, subtipo, propietario, esNuevoPropietario } = req.body;
 
-    console.log("Datos recibidos:", { descripcion, usuarioEmail, tipo, subtipo, propietario, propiedad });
+    console.log("Datos recibidos:", { descripcion, usuarioEmail, tipo, subtipo, propietario, esNuevoPropietario });
 
     try {
         const pool = await getConnection();
         console.log("Conexión con la base de datos establecida.");
 
-        // Verificar propietario
-        const propietarioCheck = await pool.request()
-            .input("rut", sql.VarChar, propietario.rut)
-            .query("SELECT rut FROM Propietario WHERE rut = @rut");
-
-        if(propietarioCheck.recordset.length === 0) {
-            //crear propietario
-            await pool.request()
+        if(esNuevoPropietario) {
+            // Verificar propietario
+            const propietarioCheck = await pool.request()
                 .input("rut", sql.VarChar, propietario.rut)
-                .input("nombres", sql.VarChar, propietario.nombres)
-                .input("apellidos", sql.VarChar, propietario.apellidos)
-                .input("email", sql.VarChar, propietario.email)
-                .input("telefono", sql.VarChar, propietario.telefono)
-                .query(`
-                    INSERT INTO Propietario (rut, nombres, apellidos, email, telefono)
-                    VALUES (@rut, @nombres, @apellidos, @email, @telefono)
-                `);
+                .query("SELECT rut FROM Propietario WHERE rut = @rut");
+
+            if(propietarioCheck.recordset.length === 0) {
+                //crear propietario
+                await pool.request()
+                    .input("rut", sql.VarChar, propietario.rut)
+                    .input("nombres", sql.VarChar, propietario.nombres)
+                    .input("apellidos", sql.VarChar, propietario.apellidos)
+                    .input("email", sql.VarChar, propietario.email)
+                    .input("telefono", sql.VarChar, propietario.telefono)
+                    .query(`
+                        INSERT INTO Propietario (rut, nombres, apellidos, email, telefono)
+                        VALUES (@rut, @nombres, @apellidos, @email, @telefono)
+                    `);
+            }
         }
 
-        // Insertar propiedad
-        const propiedadResult = await pool.request()
-            .input("direccion", sql.VarChar, propiedad.direccion)
-            .input("comuna", sql.VarChar, propiedad.comuna)
-            .input("region", sql.VarChar, propiedad.region)
-            .input("rolSII", sql.VarChar, propiedad.rolSII)
-            .input("inscFojas", sql.VarChar, propiedad.inscFojas)
-            .input("inscNumero", sql.VarChar, propiedad.InscNumero)
-            .input("inscYear", sql.Int, propiedad.InscYear)
-            .input("numPisos", sql.VarChar, propiedad.numPisos)
-            .input("m2", sql.VarChar, propiedad.m2)
-            .input("destino", sql.VarChar, propiedad.destino)
-            .query(`
-                INSERT INTO Propiedad (direccion, comuna, region, rolSII, inscFojas, inscNumero, inscYear, numPisos, m2, destino)
-                OUTPUT Inserted.id
-                VALUES (@direccion, @comuna, @region, @rolSII, @inscFojas, @InscNumero, @InscYear, @numPisos, @m2, @destino)
-            `);
+        // // Insertar propiedad
+        // const propiedadResult = await pool.request()
+        //     .input("direccion", sql.VarChar, propiedad.direccion)
+        //     .input("comuna", sql.VarChar, propiedad.comuna)
+        //     .input("region", sql.VarChar, propiedad.region)
+        //     .input("rolSII", sql.VarChar, propiedad.rolSII)
+        //     .input("inscFojas", sql.VarChar, propiedad.inscFojas)
+        //     .input("inscNumero", sql.VarChar, propiedad.InscNumero)
+        //     .input("inscYear", sql.Int, propiedad.InscYear)
+        //     .input("numPisos", sql.VarChar, propiedad.numPisos)
+        //     .input("m2", sql.VarChar, propiedad.m2)
+        //     .input("destino", sql.VarChar, propiedad.destino)
+        //     .query(`
+        //         INSERT INTO Propiedad (direccion, comuna, region, rolSII, inscFojas, inscNumero, inscYear, numPisos, m2, destino)
+        //         OUTPUT Inserted.id
+        //         VALUES (@direccion, @comuna, @region, @rolSII, @inscFojas, @InscNumero, @InscYear, @numPisos, @m2, @destino)
+        //     `);
 
-        const propiedadId = propiedadResult.recordset[0].id;
+        // const propiedadId = propiedadResult.recordset[0].id;
 
         // Crear el expediente
         const expedienteResult = await pool.request()
@@ -249,11 +251,12 @@ router.post('/', async (req, res) => {
             .input("tipo", sql.VarChar, tipo)
             .input("subtipo", sql.VarChar, subtipo)
             .input("propietarioRut", sql.VarChar, propietario.rut)
-            .input("propiedadId", sql.Int, propiedadId)
+            .input("estadoExpedienteId", sql.Int, 1) // Valor por defecto
+            // .input("propiedadId", sql.Int, propiedadId)
             .query(`
-                INSERT INTO Expedientes (descripcion, Usuario_email, tipo, subtipo, Propietario_rut, propiedad_id)
+                INSERT INTO Expedientes (descripcion, Usuario_email, tipo, subtipo, Propietario_rut)
                 OUTPUT Inserted.id
-                VALUES (@descripcion, @usuarioEmail, @tipo, @subtipo, @propietarioRut, @propiedadId)
+                VALUES (@descripcion, @usuarioEmail, @tipo, @subtipo, @propietarioRut)
             `);
 
         const expedienteId = expedienteResult.recordset[0].id;
