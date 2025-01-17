@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Modal.css"
 
+
 function ExpedienteModal({ isOpen, onClose }) {
     const navigate = useNavigate();
     const [tipos, setTipos] = useState([]);
@@ -47,14 +48,13 @@ function ExpedienteModal({ isOpen, onClose }) {
         }
 
         //crear expediente
-        navigate(`/expediente?tipo=${tipoSeleccionado}&subtipo=${subtipoSeleccionado}`);
+        // navigate(`/expediente?tipo=${tipoSeleccionado}&subtipo=${subtipoSeleccionado}`);
+        // Redirigir con parámetros tipo y subtipo
+        navigate(`/expediente-form?tipo=${tipoSeleccionado}&subtipo=${subtipoSeleccionado}`);
         onClose();  // cerrar modal
-
     };
 
     if (!isOpen) return null;
-
-
 
 
     return (
