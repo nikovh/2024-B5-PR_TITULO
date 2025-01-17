@@ -355,14 +355,29 @@ export default ExpedienteFormPage;
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { auth } from "../firebase";
+import Desplegable from "./FormPage/Desplegable";
 import "../styles/FormPage.css";
 
 function ExpedienteFormPage() {
+    const navigate = useNavigate();
     const [descripcion, setDescripcion] = useState("");
     const [responseMessage, setResponseMessage] = useState("");
     const [tipo, setTipo] = useState("");
     const [subtipo, setSubtipo] = useState("");
-    const navigate = useNavigate();
+
+    const [propietario, setPropietario] = useState({
+        rut: "",
+        nombres: "",
+        apellidos: "",
+        email: "",
+        telefono: "",
+    });
+    const [propiedad, setPropiedad] = useState({
+        direccion: "",
+        comuna: "",
+        region: "",
+        rolSII: "",
+    });
 
     const [searchParams] = useSearchParams();
 
@@ -383,6 +398,8 @@ function ExpedienteFormPage() {
                 usuarioEmail,
                 tipo,
                 subtipo,
+                propietario,
+                propiedad,
             };
             console.log("Datos enviados al backend:", datosEnviados);
 
@@ -413,7 +430,7 @@ function ExpedienteFormPage() {
 
     return (
         <div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px" }}>
-            <h2>Prueba de creación de expediente</h2>
+            <h2>Crear Expediente: {tipo} - {subtipo}</h2>
             <div>
                 <label>Descripción:</label>
                 <input
@@ -422,6 +439,71 @@ function ExpedienteFormPage() {
                     onChange={(e) => setDescripcion(e.target.value)}
                 />
             </div>
+
+            <Desplegable title="Datos del Propietario">
+            <div>
+                <label>RUT:</label>
+                <input
+                    type="text"
+                    value={propietario.rut}
+                    onChange={(e) => setPropietario({ ...propietario, rut: e.target.value })}
+                />
+                <label>Nombres:</label>
+                <input
+                    type="text"
+                    value={propietario.nombres}
+                    onChange={(e) => setPropietario({ ...propietario, nombres: e.target.value })}
+                />
+                <label>Apellidos:</label>
+                <input
+                    type="text"
+                    value={propietario.apellidos}
+                    onChange={(e) => setPropietario({ ...propietario, apellidos: e.target.value })}
+                />
+                <label>Email:</label>
+                <input
+                    type="email"
+                    value={propietario.email}
+                    onChange={(e) => setPropietario({ ...propietario, email: e.target.value })}
+                />
+                <label>Teléfono:</label>
+                <input
+                    type="text"
+                    value={propietario.telefono}
+                    onChange={(e) => setPropietario({ ...propietario, telefono: e.target.value })}
+                />
+            </div>
+            </Desplegable>
+
+            <Desplegable title="Datos de la Propiedad">
+
+                <div>
+                    <label>Dirección:</label>
+                    <input
+                        type="text"
+                        value={propiedad.direccion}
+                        onChange={(e) => setPropiedad({ ...propiedad, direccion: e.target.value })}
+                    />
+                    <label>Comuna:</label>
+                    <input
+                        type="text"
+                        value={propiedad.comuna}
+                        onChange={(e) => setPropiedad({ ...propiedad, comuna: e.target.value })}
+                    />
+                    <label>Región:</label>
+                    <input
+                        type="text"
+                        value={propiedad.region}
+                        onChange={(e) => setPropiedad({ ...propiedad, region: e.target.value })}
+                    />
+                    <label>Rol SII:</label>
+                    <input
+                        type="text"
+                        value={propiedad.rolSII}
+                        onChange={(e) => setPropiedad({ ...propiedad, rolSII: e.target.value })}
+                    />
+                </div>
+            </Desplegable>
 
             <div className="botones-der">
                 <button onClick={handleCancel}>Cancelar</button>
