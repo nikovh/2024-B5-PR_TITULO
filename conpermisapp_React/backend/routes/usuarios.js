@@ -8,17 +8,18 @@ router.post('/', async (req, res) => {
     console.log("Datos recibidos en el backend:", req.body);
     const { 
         rut,
-        nombre,
-        apellidoPaterno,
-        apellidoMaterno,
+        nombres,
+        apellidos,
         telefono,
         email,
         password,
         profesion,
+        rol,
+        patenteProfesional,
     } = req.body;
 
     //validar campos obligatorios
-    if (!rut || !nombre || !telefono || !email || !password || !profesion ) {
+    if (!rut || !nombres || !apellidos || !telefono || !email || !password || !profesion || !rol ) {
         return res.status(400).json({ error: "Completa los campos obligatorios."});
     }
 
@@ -37,33 +38,37 @@ router.post('/', async (req, res) => {
 
         await pool.request()
             .input("rut", sql.VarChar, rut)
-            .input("nombre", sql.VarChar, nombre)
-            .input("apellidoPaterno", sql.VarChar, apellidoPaterno)
-            .input("apellidoMaterno", sql.VarChar, apellidoMaterno)
-            .input("telefono", sql.VarChar, telefono)
+            .input("nombres", sql.VarChar, nombres)
+            .input("apellidos", sql.VarChar, apellidos)
+            .input("telefono", sql.Int, telefono)
             .input("email", sql.VarChar, email)
             .input("password", sql.VarChar, password)
             .input("profesion", sql.VarChar, profesion)
+            .input("rol", sql.VarChar, rol)
+            .input("patenteProfesional", sql.VarChar, patenteProfesional || null)
             .query(`
                 INSERT INTO Usuario (
                     rut, 
-                    nombre, 
-                    apellidoPaterno, 
-                    apellidoMaterno, 
+                    nombres, 
+                    apellidos, 
                     telefono, 
                     email, 
                     password, 
-                    profesion)
-                VALUES (
+                    profesion, 
+                    rol, 
+                    patenteProfesional
+                ) VALUES (
                     @rut, 
-                    @nombre, 
-                    @apellidoPaterno, 
-                    @apellidoMaterno, 
+                    @nombres, 
+                    @apellidos, 
                     @telefono, 
                     @email, 
                     @password, 
-                    @profesion)
-                `);
+                    @profesion, 
+                    @rol, 
+                    @patenteProfesional
+                )
+            `);
         res.status(201).json({ message: "Usuario registrado exitosamente." });
     } catch (err) {
         console.error("Error al registrar el usuario:", err);

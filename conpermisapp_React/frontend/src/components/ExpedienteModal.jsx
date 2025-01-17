@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/Modal.css"
 
-function ExpedienteModal({ isOpen, onClose, onCreate }) {
+function ExpedienteModal({ isOpen, onClose }) {
+    const navigate = useNavigate();
     const [tipos, setTipos] = useState([]);
     const [subtipos, setSubtipos] = useState([]);
     const [tipoSeleccionado, setTipoSeleccionado] = useState('');
     const [subtipoSeleccionado, setSubtipoSeleccionado] = useState('');
     const [subtipoFiltrado, setSubtipoFiltrado] = useState([]); // para hacer un filtro dinámico
+
+
 
     useEffect(() => {
         if (isOpen) {
@@ -35,23 +39,29 @@ function ExpedienteModal({ isOpen, onClose, onCreate }) {
         }
     }, [tipoSeleccionado, subtipos]);
 
-
+    // Manejar la creación del expediente y redirigir
     const handleCreate = () => {
         if (!tipoSeleccionado || !subtipoSeleccionado) {
             alert("Debes seleccionar el tipo de expediente y el subtipo.");
             return;
         }
-        onCreate(tipoSeleccionado, subtipoSeleccionado);
+
+        //crear expediente
+        navigate(`/expediente?tipo=${tipoSeleccionado}&subtipo=${subtipoSeleccionado}`);
         onClose();  // cerrar modal
+
     };
 
     if (!isOpen) return null;
+
+
+
 
     return (
         <div className="modal-overlay">
             <div className="modal-contenido">
                 <h2>Crear Nuevo Expediente</h2>
-                
+
                 <div className="campos-horizontal">
                     <div>
                         <label>Tipo</label>
@@ -78,7 +88,7 @@ function ExpedienteModal({ isOpen, onClose, onCreate }) {
                     </div>
                 </div>
 
-                {/* //botones */}
+
                 <div className="botones-modal">
                     <button onClick={onClose}>Cancelar</button>
                     <button onClick={handleCreate}>Crear Expediente</button>
@@ -87,6 +97,7 @@ function ExpedienteModal({ isOpen, onClose, onCreate }) {
             </div>
         </div>
     );
+
 }
 
 

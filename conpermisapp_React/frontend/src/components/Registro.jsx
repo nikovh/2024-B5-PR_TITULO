@@ -5,14 +5,14 @@ import { auth } from "../firebase";
 import '../styles/Registro.css'
 
 function Registro() {
-    const [rut, setRut] = useState('');
-    const [nombre, setNombre] = useState('');
-    const [apellidoPaterno, setApellidoPaterno] = useState('');
-    const [apellidoMaterno, setApellidoMaterno] = useState('');
-    const [telefono, setTelefono] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [profesion, setProfesion] = useState('');
+    const [rut, setRut] = useState("");
+    const [nombres, setNombres] = useState("");
+    const [apellidos, setApellidos] = useState("");
+    const [telefono, setTelefono] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [profesion, setProfesion] = useState("");
+    const [patenteProfesional, setPatenteProfesional] = useState("");
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
@@ -28,7 +28,7 @@ function Registro() {
             setError("La contraseña es obligatoria.");
             return;
         }
-        if (!rut || !nombre || !telefono || !profesion) {
+        if (!rut || !nombres || !apellidos || !telefono || !email || !password || !profesion) {
             setError("Completa los campos obligatorios.");
             return;
         }
@@ -41,17 +41,6 @@ function Registro() {
             //guardar datos en bd
             const userId = userCredential.user.uid;
 
-            console.log("Datos enviados al backend:", {
-                userId,
-                rut,
-                nombre,
-                apellidoPaterno,
-                apellidoMaterno,
-                telefono,
-                email,
-                profesion,
-            });
-
             const response = await fetch("http://localhost:4000/usuarios", {
                 method: "POST",
                 headers: {
@@ -60,13 +49,13 @@ function Registro() {
                 body: JSON.stringify({
                     uid: userId,
                     rut,
-                    nombre,
-                    apellidoPaterno,
-                    apellidoMaterno,
+                    nombres,
+                    apellidos,
                     telefono,
                     email,
                     password,
                     profesion,
+                    patenteProfesional: patenteProfesional || null,
                 }),
             });
 
@@ -99,33 +88,23 @@ function Registro() {
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="nombre">Nombre</label>
+                    <label htmlFor="nombres">Nombres</label>
                     <input
                         type="text"
-                        id="nombre"
-                        value={nombre}
-                        onChange={(e) => setNombre(e.target.value)}
+                        id="nombres"
+                        value={nombres}
+                        onChange={(e) => setNombres(e.target.value)}
                         required
                     />
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="apellidoPaterno">Apellido Paterno</label>
+                    <label htmlFor="apellidos">Apellidos</label>
                     <input
                         type="text"
-                        id="apellidoPaterno"
-                        value={apellidoPaterno}
-                        onChange={(e) => setApellidoPaterno(e.target.value)}
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="apellidoMaterno">Apellido Materno</label>
-                    <input
-                        type="text"
-                        id="apellidoMaterno"
-                        value={apellidoMaterno}
-                        onChange={(e) => setApellidoMaterno(e.target.value)}
+                        id="apellidos"
+                        value={apellidos}
+                        onChange={(e) => setApellidos(e.target.value)}
                     />
                 </div>
 
@@ -172,6 +151,17 @@ function Registro() {
                         required
                     />
                 </div>
+
+                <div className="form-group">
+                    <label htmlFor="patenteProfesional">Patente Profesional</label>
+                    <input
+                        type="text"
+                        id="patenteProfesional"
+                        value={patenteProfesional}
+                        onChange={(e) => setPatenteProfesional(e.target.value)}
+                    />
+                </div>
+
                 {error && <p className="error">{error}</p>}
                 <button type="submit">Registrarse</button>
             </form>
