@@ -145,7 +145,6 @@ function Dashboard() {
                 <p>No tienes expedientes registrados</p>
             ) : (
                 <div className="expedientes-container">
-                    {/* <ExpedienteCard onCreate={abrirModal} /> */}
                     <ExpedienteCard onCreate={() => setIsModalOpen(true)} />
                     {expedientes.map((expediente) => (
                         <ExpedienteCard 
