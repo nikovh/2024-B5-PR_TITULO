@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import "../styles/Modal.css"
 
 function ExpedienteModal({ isOpen, onClose }) {
+    const navigate = useNavigate();
     const [tipos, setTipos] = useState([]);
     const [subtipos, setSubtipos] = useState([]);
     const [tipoSeleccionado, setTipoSeleccionado] = useState('');
     const [subtipoSeleccionado, setSubtipoSeleccionado] = useState('');
     const [subtipoFiltrado, setSubtipoFiltrado] = useState([]); // para hacer un filtro dinámico
-    const navigate = useNavigate();
+
 
 
     useEffect(() => {
@@ -53,6 +54,9 @@ function ExpedienteModal({ isOpen, onClose }) {
 
     if (!isOpen) return null;
 
+
+
+
     return (
         <div className="modal-overlay">
             <div className="modal-contenido">
@@ -84,7 +88,7 @@ function ExpedienteModal({ isOpen, onClose }) {
                     </div>
                 </div>
 
-                {/* //botones */}
+
                 <div className="botones-modal">
                     <button onClick={onClose}>Cancelar</button>
                     <button onClick={handleCreate}>Crear Expediente</button>

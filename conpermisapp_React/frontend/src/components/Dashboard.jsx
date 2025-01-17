@@ -11,7 +11,6 @@ import '../styles/Dashboard.css'
 function Dashboard() {
     const [user] = useAuthState(auth);
     const [nombreUsuario, setNombreUsuario] = useState("Cargando...");
-    const [rutUsuario, setRutUsuario] = useState(null);
     const [expedientes, setExpedientes] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate = useNavigate();
@@ -19,17 +18,16 @@ function Dashboard() {
 
     useEffect(() => {
         if(user) {
-            //obtener el rut desde el email
+            //obtener expedientes a traves del email
             const email = user.email;
             fetch(`http://localhost:4000/usuarios/email/${email}`)
                 .then((response) => response.json())
                 .then((data) => {
-                    if(data.rut) {
+                    if(data.email) {
                         setNombreUsuario(data.nombre);
-                        setRutUsuario(data.rut);
 
-                        //obtener los expeddinete por usuario segun rut
-                        fetch(`http://localhost:4000/expedientes?usuario_rut=${data.rut}`)
+                        //obtener los expeddinete por usuario segun email
+                        fetch(`http://localhost:4000/expedientes?usuario_email=${data.email}`)
                             .then((res) => res.json())
                             .then((data) => {
                                 //orden descendente
@@ -52,7 +50,7 @@ function Dashboard() {
     }, [user, navigate]);
 
     const crearExpediente = async (tipo, subtipo, propietario) => {
-        if (!rutUsuario) {
+        if (!user?.email) {
             alert("Error: No se pudo identificar al usuario.");
             return;
         }
@@ -105,13 +103,12 @@ function Dashboard() {
                     propietario: {
                         rut: propietario.rut,
                     },
-                    //propietario: propietario.rut //revisar ambas alternativas
-                    usuarioRut: rutUsuario,
+                    usuarioEmail: user.email,
                     EstadoExpediente_id: 1, 
                 }),
             });
             if (resp.ok) {
-                const newExpedientes = await fetch(`http://localhost:4000/expedientes?usuario_rut=${rutUsuario}`)
+                const newExpedientes = await fetch(`http://localhost:4000/expedientes?usuario_email=${user.email}`)
                     .then((res) => res.json());
                 setExpedientes(newExpedientes);
             } else {
@@ -122,11 +119,6 @@ function Dashboard() {
             alert("Error al crear un nuevo expediente");
         }
     };
-
-    // Modal
-    // const abrirModal = () => setIsModalOpen(true);
-    // const cerrarModal = () => setIsModalOpen(false);
-
 
     const handleLogout = async () => {
         try {
