@@ -31,3 +31,13 @@ button:last-child {
 button:last-child:hover {
     background-color: #9d1442;
 }
+
+select {
+    width: fit-content;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: #333;
+    box-sizing: border-box;
+}

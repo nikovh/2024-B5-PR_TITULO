@@ -193,31 +193,70 @@ router.post('/', async (req, res) => {
 */
 
 
-// POST descripcion y usuario
+// POST descripcion y usuario, propietario y propiedad
 router.post('/', async (req, res) => {
-    const { descripcion, usuarioEmail } = req.body;
+    const { descripcion, usuarioEmail, tipo, subtipo, propietario, propiedad } = req.body;
 
-    console.log("Datos recibidos:", { descripcion, usuarioEmail });
-
-    if (!descripcion || !usuarioEmail) {
-        return res.status(400).json({ error: "Los campos son obligatorios." });
-    }
+    console.log("Datos recibidos:", { descripcion, usuarioEmail, tipo, subtipo, propietario, propiedad });
 
     try {
         const pool = await getConnection();
         console.log("Conexión con la base de datos establecida.");
 
-        // Crear el expediente
-        const result = await pool.request()
-            .input("descripcion", sql.VarChar, descripcion)
-            .input("usuarioEmail", sql.VarChar, usuarioEmail)
+        // Verificar propietario
+        const propietarioCheck = await pool.request()
+            .input("rut", sql.VarChar, propietario.rut)
+            .query("SELECT rut FROM Propietario WHERE rut = @rut");
+
+        if(propietarioCheck.recordset.length === 0) {
+            //crear propietario
+            await pool.request()
+                .input("rut", sql.VarChar, propietario.rut)
+                .input("nombres", sql.VarChar, propietario.nombres)
+                .input("apellidos", sql.VarChar, propietario.apellidos)
+                .input("email", sql.VarChar, propietario.email)
+                .input("telefono", sql.VarChar, propietario.telefono)
+                .query(`
+                    INSERT INTO Propietario (rut, nombres, apellidos, email, telefono)
+                    VALUES (@rut, @nombres, @apellidos, @email, @telefono)
+                `);
+        }
+
+        // Insertar propiedad
+        const propiedadResult = await pool.request()
+            .input("direccion", sql.VarChar, propiedad.direccion)
+            .input("comuna", sql.VarChar, propiedad.comuna)
+            .input("region", sql.VarChar, propiedad.region)
+            .input("rolSII", sql.VarChar, propiedad.rolSII)
+            .input("inscFojas", sql.VarChar, propiedad.inscFojas)
+            .input("inscNumero", sql.VarChar, propiedad.InscNumero)
+            .input("inscYear", sql.Int, propiedad.InscYear)
+            .input("numPisos", sql.VarChar, propiedad.numPisos)
+            .input("m2", sql.VarChar, propiedad.m2)
+            .input("destino", sql.VarChar, propiedad.destino)
             .query(`
-                INSERT INTO Expedientes (descripcion, Usuario_email)
+                INSERT INTO Propiedad (direccion, comuna, region, rolSII, inscFojas, inscNumero, inscYear, numPisos, m2, destino)
                 OUTPUT Inserted.id
-                VALUES (@descripcion, @usuarioEmail)
+                VALUES (@direccion, @comuna, @region, @rolSII, @inscFojas, @InscNumero, @InscYear, @numPisos, @m2, @destino)
             `);
 
-        const expedienteId = result.recordset[0].id;
+        const propiedadId = propiedadResult.recordset[0].id;
+
+        // Crear el expediente
+        const expedienteResult = await pool.request()
+            .input("descripcion", sql.VarChar, descripcion)
+            .input("usuarioEmail", sql.VarChar, usuarioEmail)
+            .input("tipo", sql.VarChar, tipo)
+            .input("subtipo", sql.VarChar, subtipo)
+            .input("propietarioRut", sql.VarChar, propietario.rut)
+            .input("propiedadId", sql.Int, propiedadId)
+            .query(`
+                INSERT INTO Expedientes (descripcion, Usuario_email, tipo, subtipo, Propietario_rut, propiedad_id)
+                OUTPUT Inserted.id
+                VALUES (@descripcion, @usuarioEmail, @tipo, @subtipo, @propietarioRut, @propiedadId)
+            `);
+
+        const expedienteId = expedienteResult.recordset[0].id;
         console.log("Expediente creado con ID:", expedienteId);
 
         res.status(201).json({
