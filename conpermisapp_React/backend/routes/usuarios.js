@@ -13,13 +13,12 @@ router.post('/', async (req, res) => {
         telefono,
         email,
         password,
-        profesion,
         rol,
         patenteProfesional,
     } = req.body;
 
     //validar campos obligatorios
-    if (!rut || !nombres || !apellidos || !telefono || !email || !password || !profesion || !rol ) {
+    if (!rut || !nombres || !email || !password ) {
         return res.status(400).json({ error: "Completa los campos obligatorios."});
     }
 
@@ -43,7 +42,6 @@ router.post('/', async (req, res) => {
             .input("telefono", sql.Int, telefono)
             .input("email", sql.VarChar, email)
             .input("password", sql.VarChar, password)
-            .input("profesion", sql.VarChar, profesion)
             .input("rol", sql.VarChar, rol)
             .input("patenteProfesional", sql.VarChar, patenteProfesional || null)
             .query(`
@@ -54,7 +52,6 @@ router.post('/', async (req, res) => {
                     telefono, 
                     email, 
                     password, 
-                    profesion, 
                     rol, 
                     patenteProfesional
                 ) VALUES (
@@ -64,7 +61,6 @@ router.post('/', async (req, res) => {
                     @telefono, 
                     @email, 
                     @password, 
-                    @profesion, 
                     @rol, 
                     @patenteProfesional
                 )

@@ -4,6 +4,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import '../styles/Registro.css'
 
+
 function Registro() {
     const [rut, setRut] = useState("");
     const [nombres, setNombres] = useState("");
@@ -11,36 +12,76 @@ function Registro() {
     const [telefono, setTelefono] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [profesion, setProfesion] = useState("");
     const [patenteProfesional, setPatenteProfesional] = useState("");
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
+    //Validaciones mínimas
+    const validateRut = (value) => {
+        if (/^[0-9]+-[0-9kK]{1}$/.test(value)) {
+            return ""; // El RUT es válido
+        }
+        return "El RUT debe ser válido (formato: 12345678-9)."; // Mensaje de error
+    };
+    const validateNombres = (value) => { 
+        if (value.trim() !== "") {
+            return ""; // El nombre es válido
+        }
+        return "El nombre es obligatorio."; // Mensaje de error
+    };
+    
+    const validateTelefono = (value) => {
+        if (/^[0-9]{8,15}$/.test(value)) {
+            return ""; // El teléfono es válido
+        }
+        return "Ingrese un teléfono válido (8-15 dígitos)."; // Mensaje de error
+    };
+    
+
+
+    const handleValidation = (field, value) => {
+        switch (field) {
+            case "rut":
+                return validateRut(value);
+            case "nombres":
+                return validateNombres(value);
+            case "telefono":
+                return validateTelefono(value);
+            default:
+                return "";
+        }
+    };
+
     const handleRegistrar = async (e) => {
         e.preventDefault();
         setError('');
-
-        if (!email) {
-            setError("El correo electrónico es obligatorio.");
-            return;
+    
+        // Validar campos manualmente
+        const validations = [
+            ["rut", rut],
+            ["nombres", nombres],
+            ["telefono", telefono],
+        ];
+    
+        for (const [field, value] of validations) {
+            const validationResult = handleValidation(field, value);
+            if (validationResult) {
+                setError(validationResult);
+                console.error(`Error en el campo ${field}: ${validationResult}`);
+                return;
+            }
         }
-        if (!password) {
-            setError("La contraseña es obligatoria.");
-            return;
-        }
-        if (!rut || !nombres || !apellidos || !telefono || !email || !password || !profesion) {
-            setError("Completa los campos obligatorios.");
-            return;
-        }
-        
+    
         try {
-            //registrar usuario en firebase
             console.log("Registrando usuario con email:", email, "y password:", password);
+            
+            // Firebase Auth
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-
-            //guardar datos en bd
             const userId = userCredential.user.uid;
-
+    
+            console.log("Usuario registrado en Firebase con UID:", userId);
+    
+            // Llamada al Backend
             const response = await fetch("http://localhost:4000/usuarios", {
                 method: "POST",
                 headers: {
@@ -50,26 +91,33 @@ function Registro() {
                     uid: userId,
                     rut,
                     nombres,
-                    apellidos,
+                    apellidos: apellidos || null,
                     telefono,
                     email,
                     password,
-                    profesion,
                     patenteProfesional: patenteProfesional || null,
+                    rol: "usuario",
                 }),
             });
-
+    
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || "Error al registrar usuario.");
+                console.error("Error en el backend:", errorData);
+                throw new Error(errorData.error || "Error al registrar usuario en el backend.");
             }
 
+            console.log("Usuario registrado en el backend correctamente.");
+            alert("Usuario creado exitosamente")
             navigate("/");
+
+            
+
         } catch (err) {
-            console.error("Error al registrar el usuario:", err);
+            console.error("Error general:", err);
             setError(err.message || "Ocurrió un error al registrar el usuario.");
         }
     };
+
 
     return (
         <div className="register-container">
@@ -82,7 +130,7 @@ function Registro() {
                         id="rut"
                         value={rut}
                         onChange={(e) => setRut(e.target.value)}
-                        placeholder="ingresa sin puntos ni guión"
+                        // placeholder="ingresa sin puntos ni guión"
                         required
                     />
                 </div>
@@ -137,17 +185,6 @@ function Registro() {
                         id="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="profesion">Profesión</label>
-                    <input
-                        type="text"
-                        id="profesion"
-                        value={profesion}
-                        onChange={(e) => setProfesion(e.target.value)}
                         required
                     />
                 </div>
