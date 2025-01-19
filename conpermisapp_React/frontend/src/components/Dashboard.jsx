@@ -4,21 +4,20 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase";
 import { signOut } from "firebase/auth";
 import ExpedienteModal from "./ExpedienteModal";
-import ExpedienteCard from "./ExpedienteCard"
+import Card from "./Card"
 import '../styles/Dashboard.css'
 
 
 function Dashboard() {
     const [user] = useAuthState(auth);
-    const [nombreUsuario, setNombreUsuario] = useState("Invitado");
+    const [nombreUsuario, setNombreUsuario] = useState("Usuario general");
     const [expedientes, setExpedientes] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate = useNavigate();
 
 
     useEffect(() => {
-        if (!user) return; // Esperar a que `user` esté definido
-    
+ 
         const fetchData = async () => {
             try {
                 const email = user.email;
@@ -27,8 +26,9 @@ function Dashboard() {
                 const userResponse = await fetch(`http://localhost:4000/usuarios/email/${email}`);
                 if (!userResponse.ok) throw new Error("No se encontró el usuario en la base de datos.");
                 const userData = await userResponse.json();
-    
-                setNombreUsuario(userData.nombre); // Actualizar el nombre del usuario
+                console.log(userData)
+                
+                setNombreUsuario(userData.nombres); // Actualizar el nombre del usuario
     
                 // Solicitud para obtener los expedientes
                 const expedientesResponse = await fetch(`http://localhost:4000/expedientes?usuario_email=${email}`);
@@ -135,11 +135,11 @@ function Dashboard() {
     };
 
 
-    const handleEditExpediente = (id) => {
-        // Navegar a una pantalla de edición o abrir un modal con el expediente seleccionado
-        console.log(`Editar expediente con ID: ${id}`);
-        navigate(`/editar-expediente/${id}`);
-    };
+    // const handleEditExpediente = (id) => {
+    //     // Navegar a una pantalla de edición o abrir un modal con el expediente seleccionado
+    //     console.log(`Editar expediente con ID: ${id}`);
+    //     navigate(`/editar-expediente/${id}`);
+    // };
 
     const handleDeleteExpediente = async (id) => {
         const confirmDelete = window.confirm("¿Estás seguro de que deseas eliminar este expediente?");
@@ -163,45 +163,43 @@ function Dashboard() {
         }
     };
 
-
-
     return (
-        <div style={{ padding: '1rem' }}>
-            <h1>Bienvenido {nombreUsuario !== "Cargando..." ? nombreUsuario : "Usuario"}</h1>
-
-            <button onClick={handleLogout} className="logoutButton">
-                Cerrar Sesión
-            </button>
-
+        <div className="dashboard">
+            {/* Encabezado del Dashboard */}
+            <div className="dashboard-header">
+                <h1>Bienvenido {nombreUsuario}</h1>
+                <button onClick={handleLogout} className="cerrarButton">
+                    Cerrar Sesión
+                </button>
+            </div>
+    
+            {/* Contenido del Dashboard */}
             <h2>Mis Expedientes</h2>
             <div className="expedientes-container">
                 {/* Tarjeta para crear un nuevo expediente */}
-                <ExpedienteCard expediente={null} onCreate={() => setIsModalOpen(true)} />
-
+                <Card expediente={null} onCreate={() => setIsModalOpen(true)} />
                 {/* Mostrar los expedientes existentes */}
-                {expedientes.length === 0 ? (
-                    <p>No tienes expedientes registrados</p>
-                ) : (
+                {expedientes.length === 0 ? ("") : (
                     expedientes.map((expediente) => (
-                        <ExpedienteCard
+                        <Card
                             key={expediente.id}
                             expediente={expediente}
                             onClick={() => abrirDetalleExpediente(expediente.id)}
-                            onEdit={handleEditExpediente}
+                            // onEdit={handleEditExpediente}
                             onDelete={handleDeleteExpediente}
                         />
                     ))
                 )}
             </div>
-
+    
             <ExpedienteModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onCreate={crearExpediente}
             />
-
         </div>
     );
+
 }
 
 export default Dashboard;

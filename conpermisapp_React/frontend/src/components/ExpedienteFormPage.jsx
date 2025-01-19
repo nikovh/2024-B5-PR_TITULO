@@ -108,7 +108,7 @@ function ExpedienteFormPage() {
             if (response.ok) {
                 const data = await response.json();
                 setResponseMessage(`Expediente creado: ${data.message}`);
-                alert(`Expediente creado exitosamente: ${data.message}`)
+                alert("Expediente creado exitosamente!")
             } else {
                 const error = await response.json();
                 setResponseMessage(`Error: ${error.message}`);

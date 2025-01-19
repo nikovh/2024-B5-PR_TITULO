@@ -26,6 +26,7 @@ function Login() {
 
     return (
         <div className="login-background">
+            <div className="background-text">conPermisApp</div>
             <div className="login-box">
                 <h2>Inicia sesión a tu cuenta</h2>
                 <form onSubmit={handleLogin}>
