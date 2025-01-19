@@ -25,7 +25,7 @@ function App() {
         <Route path="/registro" element={<Registro />} />
         <Route path="/expediente-form" element={<ExpedienteFormPage />} />
         <Route path="/expedientes" element={<ExpedienteManager />} />
-        <Route path="/expedientes/:id" element={<ExpedienteDetalle />} />
+        <Route path="/detalle/:id" element={<ExpedienteDetalle />} />
 
       </Routes>
     </BrowserRouter>

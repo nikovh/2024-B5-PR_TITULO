@@ -10,50 +10,51 @@ import '../styles/Dashboard.css'
 
 function Dashboard() {
     const [user] = useAuthState(auth);
-    const [nombreUsuario, setNombreUsuario] = useState("Cargando...");
+    const [nombreUsuario, setNombreUsuario] = useState("Invitado");
     const [expedientes, setExpedientes] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate = useNavigate();
 
 
     useEffect(() => {
-        if(user) {
-            //obtener expedientes a traves del email
-            const email = user.email;
-            fetch(`http://localhost:4000/usuarios/email/${email}`)
-                .then((response) => response.json())
-                .then((data) => {
-                    if(data.email) {
-                        setNombreUsuario(data.nombre);
-
-                        //obtener los expeddinete por usuario segun email
-                        fetch(`http://localhost:4000/expedientes?usuario_email=${data.email}`)
-                            .then((res) => res.json())
-                            .then((data) => {
-                                //orden descendente
-                                const ordenDesc = data.sort((a, b) => 
-                                    new Date(b.fechaCreacion) - new Date(a.fechaCreacion)
-                            );
-                            setExpedientes(ordenDesc);
-                        })
-                            .catch((err) => console.error("Error al cargar expedientes:", err));
-                    } else {
-                        console.error("No se encontró el usuario en la base de datos.");
-                        setNombreUsuario("Usuario no encontrado");
-                    }
-                })
-                .catch((err) => console.error("Error al obtener el usuario:", err));
-        } else {
-            console.error("Usuario no autenticado.");
-            navigate("/");
-        }
+        if (!user) return; // Esperar a que `user` esté definido
+    
+        const fetchData = async () => {
+            try {
+                const email = user.email;
+    
+                // Solicitud para obtener el usuario
+                const userResponse = await fetch(`http://localhost:4000/usuarios/email/${email}`);
+                if (!userResponse.ok) throw new Error("No se encontró el usuario en la base de datos.");
+                const userData = await userResponse.json();
+    
+                setNombreUsuario(userData.nombre); // Actualizar el nombre del usuario
+    
+                // Solicitud para obtener los expedientes
+                const expedientesResponse = await fetch(`http://localhost:4000/expedientes?usuario_email=${email}`);
+                if (!expedientesResponse.ok) throw new Error("Error al cargar expedientes.");
+                const expedientesData = await expedientesResponse.json();
+    
+                if (!Array.isArray(expedientesData)) {
+                    console.error("El backend no devolvió un array:", expedientesData);
+                    setExpedientes([]);
+                    return;
+                }
+    
+                // Ordenar los expedientes
+                const ordenDesc = expedientesData.sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion));
+                setExpedientes(ordenDesc);
+            } catch (err) {
+                console.error(err.message);
+                setNombreUsuario("Usuario no encontrado");
+                setExpedientes([]); // Asegúrate de que los expedientes se vacíen en caso de error
+            }
+        };
+    
+        fetchData();
     }, [user, navigate]);
 
     const crearExpediente = async (tipo, subtipo, propietario) => {
-        if (!user?.email) {
-            alert("Error: No se pudo identificar al usuario.");
-            return;
-        }
 
         try {
             //verificar si el propietario existe
@@ -104,7 +105,7 @@ function Dashboard() {
                         rut: propietario.rut,
                     },
                     usuarioEmail: user.email,
-                    EstadoExpediente_id: 1, 
+                    EstadoExpediente_id: 1,
                 }),
             });
             if (resp.ok) {
@@ -133,28 +134,65 @@ function Dashboard() {
         navigate(`/detalle/${id}`);
     };
 
+
+    const handleEditExpediente = (id) => {
+        // Navegar a una pantalla de edición o abrir un modal con el expediente seleccionado
+        console.log(`Editar expediente con ID: ${id}`);
+        navigate(`/editar-expediente/${id}`);
+    };
+
+    const handleDeleteExpediente = async (id) => {
+        const confirmDelete = window.confirm("¿Estás seguro de que deseas eliminar este expediente?");
+        if (!confirmDelete) return;
+
+        try {
+            const response = await fetch(`http://localhost:4000/expedientes/${id}`, {
+                method: "DELETE",
+            });
+
+            if (response.ok) {
+                alert("Expediente eliminado exitosamente");
+                setExpedientes((prevExpedientes) => prevExpedientes.filter((exp) => exp.id !== id));
+            } else {
+                console.error("Error al eliminar el expediente");
+                alert("Ocurrió un error al eliminar el expediente");
+            }
+        } catch (err) {
+            console.error("Error al eliminar el expediente:", err);
+            alert("Error al eliminar el expediente");
+        }
+    };
+
+
+
     return (
         <div style={{ padding: '1rem' }}>
-            <h1>Bienvenido {nombreUsuario}</h1>
+            <h1>Bienvenido {nombreUsuario !== "Cargando..." ? nombreUsuario : "Usuario"}</h1>
+
             <button onClick={handleLogout} className="logoutButton">
                 Cerrar Sesión
             </button>
 
             <h2>Mis Expedientes</h2>
-            {expedientes.length === 0 ? (
-                <p>No tienes expedientes registrados</p>
-            ) : (
-                <div className="expedientes-container">
-                    <ExpedienteCard onCreate={() => setIsModalOpen(true)} />
-                    {expedientes.map((expediente) => (
-                        <ExpedienteCard 
-                            key={expediente.id} 
+            <div className="expedientes-container">
+                {/* Tarjeta para crear un nuevo expediente */}
+                <ExpedienteCard expediente={null} onCreate={() => setIsModalOpen(true)} />
+
+                {/* Mostrar los expedientes existentes */}
+                {expedientes.length === 0 ? (
+                    <p>No tienes expedientes registrados</p>
+                ) : (
+                    expedientes.map((expediente) => (
+                        <ExpedienteCard
+                            key={expediente.id}
                             expediente={expediente}
-                            onClick={() => abrirDetalleExpediente(expediente.id)} 
+                            onClick={() => abrirDetalleExpediente(expediente.id)}
+                            onEdit={handleEditExpediente}
+                            onDelete={handleDeleteExpediente}
                         />
-                    ))}
-                </div>
-            )}
+                    ))
+                )}
+            </div>
 
             <ExpedienteModal
                 isOpen={isModalOpen}

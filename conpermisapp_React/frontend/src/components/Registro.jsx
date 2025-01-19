@@ -1,4 +1,4 @@
-import React, { useState} from "react";
+import React, { useState, useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
@@ -13,74 +13,84 @@ function Registro() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [patenteProfesional, setPatenteProfesional] = useState("");
-    const [error, setError] = useState('');
+    const [errors, setErrors] = useState('');
     const navigate = useNavigate();
 
-    //Validaciones mínimas
-    const validateRut = (value) => {
+    // Limpia el formulario al cargar el componente
+    useEffect(() => {
+        setRut("");
+        setNombres("");
+        setApellidos("");
+        setTelefono("");
+        setEmail("");
+        setPassword("");
+        setPatenteProfesional("");
+        setErrors("");
+    }, []);
+
+    //Validaciones 
+    const validarRut = (value) => {
         if (/^[0-9]+-[0-9kK]{1}$/.test(value)) {
             return ""; // El RUT es válido
         }
-        return "El RUT debe ser válido (formato: 12345678-9)."; // Mensaje de error
+        return "El RUT debe ser válido (formato: 12345678-9)."; 
     };
-    const validateNombres = (value) => { 
+    const validarNombres = (value) => { 
         if (value.trim() !== "") {
             return ""; // El nombre es válido
         }
-        return "El nombre es obligatorio."; // Mensaje de error
+        return "El nombre es obligatorio."; 
     };
     
-    const validateTelefono = (value) => {
+    const validarTelefono = (value) => {
         if (/^[0-9]{8,15}$/.test(value)) {
             return ""; // El teléfono es válido
         }
-        return "Ingrese un teléfono válido (8-15 dígitos)."; // Mensaje de error
+        return "Ingrese un teléfono válido (8-15 dígitos)."; 
     };
     
-
-
-    const handleValidation = (field, value) => {
-        switch (field) {
-            case "rut":
-                return validateRut(value);
-            case "nombres":
-                return validateNombres(value);
-            case "telefono":
-                return validateTelefono(value);
-            default:
-                return "";
+    const validarEmail = (value) => {
+        if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            return ""; // El correo es válido
         }
+        return "Ingrese un correo electrónico válido.";
+    };
+
+    const validarPassword = (value) => {
+        if (value.length >= 6) {
+            return ""; // La contraseña es válida
+        }
+        return "La contraseña debe tener al menos 6 caracteres.";
     };
 
     const handleRegistrar = async (e) => {
         e.preventDefault();
-        setError('');
+        const validationErrors = {};
     
-        // Validar campos manualmente
-        const validations = [
-            ["rut", rut],
-            ["nombres", nombres],
-            ["telefono", telefono],
-        ];
-    
-        for (const [field, value] of validations) {
-            const validationResult = handleValidation(field, value);
-            if (validationResult) {
-                setError(validationResult);
-                console.error(`Error en el campo ${field}: ${validationResult}`);
-                return;
-            }
+        // Validar todos los campos requeridos
+        validationErrors.rut = validarRut(rut);
+        validationErrors.nombres = validarNombres(nombres);
+        validationErrors.telefono = validarTelefono(telefono);
+        validationErrors.email = validarEmail(email);
+        validationErrors.password = validarPassword(password);
+
+        // Filtrar errores que no estén vacíos
+        const hasErrors = Object.values(validationErrors).some((error) => error !== "");
+        setErrors(validationErrors);
+
+        if (hasErrors) {
+            return; // Detener el envío si hay errores
         }
-    
+
         try {
             console.log("Registrando usuario con email:", email, "y password:", password);
-            
+
             // Firebase Auth
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const userId = userCredential.user.uid;
-    
+
             console.log("Usuario registrado en Firebase con UID:", userId);
-    
+
             // Llamada al Backend
             const response = await fetch("http://localhost:4000/usuarios", {
                 method: "POST",
@@ -99,7 +109,7 @@ function Registro() {
                     rol: "usuario",
                 }),
             });
-    
+
             if (!response.ok) {
                 const errorData = await response.json();
                 console.error("Error en el backend:", errorData);
@@ -107,14 +117,11 @@ function Registro() {
             }
 
             console.log("Usuario registrado en el backend correctamente.");
-            alert("Usuario creado exitosamente")
+            alert("Usuario creado exitosamente");
             navigate("/");
-
-            
-
         } catch (err) {
             console.error("Error general:", err);
-            setError(err.message || "Ocurrió un error al registrar el usuario.");
+            setErrors((prev) => ({ ...prev, general: err.message || "Ocurrió un error al registrar el usuario." }));
         }
     };
 
@@ -130,9 +137,9 @@ function Registro() {
                         id="rut"
                         value={rut}
                         onChange={(e) => setRut(e.target.value)}
-                        // placeholder="ingresa sin puntos ni guión"
                         required
                     />
+                    {errors.rut && <p className="error">{errors.rut}</p>}
                 </div>
 
                 <div className="form-group">
@@ -144,6 +151,7 @@ function Registro() {
                         onChange={(e) => setNombres(e.target.value)}
                         required
                     />
+                    {errors.nombres && <p className="error">{errors.nombres}</p>}
                 </div>
 
                 <div className="form-group">
@@ -157,7 +165,7 @@ function Registro() {
                 </div>
 
                 <div className="form-group">
-                    <label htmlFor="telefono">Telefono</label>
+                    <label htmlFor="telefono">Teléfono</label>
                     <input
                         type="text"
                         id="telefono"
@@ -165,6 +173,7 @@ function Registro() {
                         onChange={(e) => setTelefono(e.target.value)}
                         required
                     />
+                    {errors.telefono && <p className="error">{errors.telefono}</p>}
                 </div>
 
                 <div className="form-group">
@@ -176,6 +185,7 @@ function Registro() {
                         onChange={(e) => setEmail(e.target.value)}
                         required
                     />
+                    {errors.email && <p className="error">{errors.email}</p>}
                 </div>
 
                 <div className="form-group">
@@ -187,6 +197,7 @@ function Registro() {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
+                    {errors.password && <p className="error">{errors.password}</p>}
                 </div>
 
                 <div className="form-group">
@@ -199,7 +210,7 @@ function Registro() {
                     />
                 </div>
 
-                {error && <p className="error">{error}</p>}
+                {errors.general && <p className="error">{errors.general}</p>}
                 <button type="submit">Registrarse</button>
             </form>
             <p>

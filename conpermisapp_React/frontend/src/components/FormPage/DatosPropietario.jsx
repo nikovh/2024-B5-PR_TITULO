@@ -9,10 +9,52 @@ const DatosPropietario = ({ onUpdate }) => {
     telefono: '',
   });
 
+  const [errores, setErrores] = useState({
+    rut: '',
+    nombres: '',
+    email: '',
+    telefono: '',
+  });
+
+  // Validadores
+  const validarRut = (rut) => {
+    const regexRut = /^[0-9]{7,8}-[0-9kK]{1}$/; // Formato básico de RUT
+    return regexRut.test(rut) ? '' : 'El RUT debe ser válido (Ej: 12345678-9).';
+  };
+
+  const validarNombres = (nombres) => {
+    return nombres.trim().length > 0 ? '' : 'El nombre es obligatorio.';
+  };
+
+  const validarEmail = (email) => {
+    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regexEmail.test(email) ? '' : 'El correo electrónico debe ser válido.';
+  };
+
+  const validarTelefono = (telefono) => {
+    const regexTelefono = /^[0-9]{8,15}$/; // Teléfonos con entre 8 y 15 dígitos
+    return regexTelefono.test(telefono) ? '' : 'El teléfono debe tener entre 8 y 15 dígitos.';
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setPropietario({ ...propietario, [name]: value });
-    onUpdate({ ...propietario, [name]: value });
+
+    // Actualizar propietario
+    const nuevoPropietario = { ...propietario, [name]: value };
+    setPropietario(nuevoPropietario);
+
+    // Validar campo específico
+    let error = '';
+    if (name === 'rut') error = validarRut(value);
+    if (name === 'nombres') error = validarNombres(value);
+    if (name === 'email') error = validarEmail(value);
+    if (name === 'telefono') error = validarTelefono(value);
+
+    setErrores({ ...errores, [name]: error });
+
+    // Enviar datos actualizados y validados al padre
+    const datosValidos = Object.values(errores).every((err) => err === '') && error === '';
+    onUpdate({ ...nuevoPropietario, datosValidos });
   };
 
   return (
@@ -22,11 +64,11 @@ const DatosPropietario = ({ onUpdate }) => {
           <label>RUT:</label>
           <input
             name="rut"
-            placeholder="Ingrese el RUT sin puntos ni guión"
             value={propietario.rut}
             onChange={handleChange}
-            maxLength={9} 
+            maxLength={10}
           />
+          {errores.rut && <p style={{ color: 'red', fontSize: '12px' }}>{errores.rut}</p>}
         </div>
         <div>
           <label>Nombres:</label>
@@ -34,8 +76,9 @@ const DatosPropietario = ({ onUpdate }) => {
             name="nombres"
             value={propietario.nombres}
             onChange={handleChange}
-            maxLength={25} 
+            maxLength={25}
           />
+          {errores.nombres && <p style={{ color: 'red', fontSize: '12px' }}>{errores.nombres}</p>}
         </div>
         <div>
           <label>Apellidos:</label>
@@ -43,7 +86,7 @@ const DatosPropietario = ({ onUpdate }) => {
             name="apellidos"
             value={propietario.apellidos}
             onChange={handleChange}
-            maxLength={25} 
+            maxLength={25}
           />
         </div>
         <div>
@@ -53,8 +96,9 @@ const DatosPropietario = ({ onUpdate }) => {
             type="email"
             value={propietario.email}
             onChange={handleChange}
-            maxLength={25} 
+            maxLength={50}
           />
+          {errores.email && <p style={{ color: 'red', fontSize: '12px' }}>{errores.email}</p>}
         </div>
         <div>
           <label>Teléfono:</label>
@@ -64,6 +108,7 @@ const DatosPropietario = ({ onUpdate }) => {
             value={propietario.telefono}
             onChange={handleChange}
           />
+          {errores.telefono && <p style={{ color: 'red', fontSize: '12px' }}>{errores.telefono}</p>}
         </div>
       </form>
     </div>
