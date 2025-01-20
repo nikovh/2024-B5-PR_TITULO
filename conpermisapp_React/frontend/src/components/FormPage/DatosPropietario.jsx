@@ -53,7 +53,15 @@ const DatosPropietario = ({ onUpdate }) => {
     setErrores({ ...errores, [name]: error });
 
     // Enviar datos actualizados y validados al padre
-    const datosValidos = Object.values(errores).every((err) => err === '') && error === '';
+    // const datosValidos = Object.values(errores).every((err) => err === '') && error === '';
+    // onUpdate({ ...nuevoPropietario, datosValidos });
+
+    const datosValidos =
+      Object.values({ ...errores, [name]: error }).every((err) => err === '') &&
+      propietario.rut.trim() &&
+      propietario.nombres.trim() &&
+      propietario.email.trim() &&
+      propietario.telefono.trim();
     onUpdate({ ...nuevoPropietario, datosValidos });
   };
 
@@ -76,7 +84,7 @@ const DatosPropietario = ({ onUpdate }) => {
             name="nombres"
             value={propietario.nombres}
             onChange={handleChange}
-            maxLength={25}
+            maxLength={50}
           />
           {errores.nombres && <p style={{ color: 'red', fontSize: '12px' }}>{errores.nombres}</p>}
         </div>
@@ -86,7 +94,7 @@ const DatosPropietario = ({ onUpdate }) => {
             name="apellidos"
             value={propietario.apellidos}
             onChange={handleChange}
-            maxLength={25}
+            maxLength={50}
           />
         </div>
         <div>

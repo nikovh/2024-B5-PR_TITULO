@@ -16,6 +16,45 @@ const DatosPropiedad = ({ onUpdate }) => {
         destino: '',
     });
 
+    const [errores, setErrores] = useState({
+        rolSII: '',
+        direccion: '',
+        numero: '',
+        comuna: '',
+        region: '',
+        inscFojas: '',
+        InscNumero: '',
+        InscYear: '',
+        numPisos: '',
+        m2: '',
+        destino: '',
+      });
+
+    // Validadores
+    const validarRolSII = (rol) => {
+        const regexRol = /^[0-9]{6,9}-[0-9kK]{1}$/; // Ejemplo básico de formato de Rol SII
+        return regexRol.test(rol) ? '' : 'El Rol SII debe tener un formato válido (Ej: 1234567-8).';
+    };
+
+    const validarTexto = (texto) => {
+        return texto.trim().length > 0 ? '' : 'Este campo es obligatorio.';
+    };
+
+    const validarNumeroPositivo = (numero) => {
+        return numero > 0 ? '' : 'Debe ser un número positivo.';
+    };
+
+    setErrores({ ...errores, [name]: error });
+
+    // Calcular si todos los datos son válidos
+    const datosValidos =
+      Object.values({ ...errores, [name]: error }).every((err) => err === '') &&
+      nuevaPropiedad.rolSII.trim() &&
+      nuevaPropiedad.direccion.trim() &&
+      nuevaPropiedad.comuna.trim() &&
+      nuevaPropiedad.region.trim() &&
+      nuevaPropiedad.destino.trim();
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setPropiedad({ ...propiedad, [name]: value });

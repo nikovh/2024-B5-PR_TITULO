@@ -24,6 +24,7 @@ function ExpedienteFormPage() {
         apellidos: "",
         email: "",
         telefono: "",
+        datosValidos: false,
     });
 
     const [esNuevoPropietario, setEsNuevoPropietario] = useState(false); //para crear un nuevo prop.
@@ -66,10 +67,12 @@ function ExpedienteFormPage() {
             setPropietario({ rut: "", nombres: "", apellidos: "", email: "", telefono: "" });
         } else {
             setEsNuevoPropietario(false);
+
             const propietarioExistente = propietariosList.find((p) => p.rut === rut);
+            
             if (propietarioExistente) {
-                setPropietario(propietarioExistente);
-            }
+                setPropietario({...propietarioExistente, datosValidos: true});
+            } 
         }
     };
 
@@ -83,20 +86,17 @@ function ExpedienteFormPage() {
             return;
         }
 
-        // Obtener el correo del usuario autenticado
-        const usuarioEmail = auth.currentUser?.email || null;
+        const datosEnviados = {
+            descripcion,
+            usuarioEmail: auth.currentUser?.email || null,
+            tipo,
+            subtipo,
+            propietario,
+            esNuevoPropietario,
+        };
+        console.log("Datos enviados al backend:", datosEnviados);
 
         try {
-            const datosEnviados = {
-                descripcion,
-                usuarioEmail: auth.currentUser?.email || null,
-                tipo,
-                subtipo,
-                propietario,
-                esNuevoPropietario,
-            };
-            console.log("Datos enviados al backend:", datosEnviados);
-
             const response = await fetch("http://localhost:4000/expedientes", {
                 method: "POST",
                 headers: {
@@ -254,7 +254,7 @@ function ExpedienteFormPage() {
 
             <div className="botones-der">
                 <button onClick={handleCancel}>Volver</button>
-                <button onClick={handleSubmit}>Enviar</button>
+                <button onClick={handleSubmit}>Crear expediente</button>
             </div>
         </div>
     );
