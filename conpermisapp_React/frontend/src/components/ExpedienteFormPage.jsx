@@ -8,7 +8,10 @@ import "../styles/FormPage.css";
 
 function ExpedienteFormPage() {
     const navigate = useNavigate();
+
+    // estados
     const [descripcion, setDescripcion] = useState("");
+    const [errores, setErrores] = useState({ descripcion: "" });
     const [responseMessage, setResponseMessage] = useState("");
     const [tipo, setTipo] = useState("");
     const [subtipo, setSubtipo] = useState("");
@@ -17,11 +20,14 @@ function ExpedienteFormPage() {
     const [searchParams] = useSearchParams();
 
     const [propietario, setPropietario] = useState(null);
-    const [propiedad, setPropiedad] = useState(null);
-
     const [propietariosList, setPropietariosList] = useState([]);
     const [propietarioSeleccionado, setPropietarioSeleccionado] = useState("");
     const [esNuevoPropietario, setEsNuevoPropietario] = useState(false);
+
+    // validacion descr
+    const validarDescripcion = (desc) => {
+        return desc.trim().length > 0 ? "" : "La descripción es necesaria, no olvides completar este campo.";
+    };
 
     // Cargar tipo y subtipo desde el backend
     useEffect(() => {
@@ -29,7 +35,7 @@ function ExpedienteFormPage() {
         const subtipoParam = searchParams.get("subtipo") || "";
         setTipo(tipoParam);
         setSubtipo(subtipoParam);
-        
+
         // Cargar nombres de tipo y subtipo
         const fetchNombres = async () => {
             try {
@@ -88,29 +94,29 @@ function ExpedienteFormPage() {
     };
 
     const handleSubmit = async () => {
+
+        const descripcionError = validarDescripcion(descripcion);
+        if (descripcionError) {
+            setErrores({ descripcion: descripcionError });
+            return;
+        }
+
         if (!propietario || !propietario.datosValidos) {
             alert("Por favor, complete todos los datos del propietario.");
             return;
         }
 
-        if ( !propiedad || !propiedad.datosValidos) {
-            alert("Por favor, complete todos los datos de la propiedad.");
-            console.log("Propiedad invalida o incompleta:", propiedad);
-            return;
-        }
-
-        const datosEnviados = {
-            descripcion,
-            usuarioEmail: auth.currentUser?.email || null,
-            tipo,
-            subtipo,
-            propietario,
-            esNuevoPropietario,
-            propiedad,
-        };
-        console.log("Datos enviados al backend:", datosEnviados);
-
         try {
+            const datosEnviados = {
+                descripcion,
+                usuarioEmail: auth.currentUser?.email || null,
+                tipo,
+                subtipo,
+                propietario,
+                esNuevoPropietario,
+            };
+            console.log("Datos enviados al backend:", datosEnviados);
+
             const response = await fetch("http://localhost:4000/expedientes", {
                 method: "POST",
                 headers: {
@@ -118,75 +124,92 @@ function ExpedienteFormPage() {
                 },
                 body: JSON.stringify(datosEnviados),
             });
-    
-            if (response.ok) {
-                const data = await response.json();
-                setResponseMessage(`Expediente creado: ${data.message}`);
-                alert("Expediente creado exitosamente!");
-            } else {
+
+            // if (response.ok) {
+            //     const data = await response.json();
+            //     setResponseMessage(`Expediente creado: ${data.message}`);
+            //     alert("Expediente creado exitosamente!");
+            //     navigate(`/expedientes/${data.id}`);
+            // } else {
+            //     const error = await response.json();
+            //     setResponseMessage(`Error: ${error.message}`);
+            // }
+
+            if (!response.ok) {
                 const error = await response.json();
+                console.error("Error al crear el expediente:", error);
                 setResponseMessage(`Error: ${error.message}`);
+                return;
             }
+
+            const data = await response.json();
+            //verificar el id del expediente
+            if(data.id) {
+                console.log("Expediente creado con ID:", data.id);
+                //redirigir
+                navigate(`/expedientes/${data.id}`);
+            } else {
+                console.error("El backend no devolvió un ID válido para el expediente.");
+                alert("No se pudo obtener el ID del expediente. Inténtelo nuevamente.");
+            }
+
         } catch (err) {
-            setResponseMessage("Error al conectar con el backend.");
             console.error(err);
+            setResponseMessage("Error al conectar con el backend.");
         }
     };
 
     const handleCancel = () => navigate("/dashboard");
-    
-return (
-    <div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px" }}>
-        <h2>Crear Expediente: {tipoNombre} - {subtipoNombre}</h2>
-        <div>
-            <label>Descripción:</label>
-            <input
-                type="text"
-                value={descripcion}
-                onChange={(e) => setDescripcion(e.target.value)}
-            />
-        </div>
 
-        {/* Datos del Propietario */}
-        <Desplegable title="Datos del Propietario">
+    return (
+        <div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px" }}>
+            <h2>Crear Expediente</h2>
+            {/* Descripción */}
             <div>
-                <label>Seleccionar Propietario:</label>
-                <select
-                    value={propietarioSeleccionado}
-                    onChange={(e) => handlePropietarioSeleccionado(e.target.value)}
-                >
-                    <option value="">Seleccione un propietario</option>
-                    {propietariosList.map((propietario) => (
-                        <option key={propietario.rut} value={propietario.rut}>
-                            {propietario.rut} - {propietario.nombres}
-                        </option>
-                    ))}
-                    <option value="nuevo">Crear nuevo propietario</option>
-                </select>
+                <label>Descripción:</label>
+                <input
+                    type="text"
+                    value={descripcion}
+                    onChange={(e) => {
+                        setDescripcion(e.target.value);
+                        setErrores({ descripcion: validarDescripcion(e.target.value) });
+                    }}
+                />
+                {errores.descripcion && (
+                    <p style={{ color: "red", fontSize: "12px" }}>{errores.descripcion}</p>
+                )}
             </div>
 
-            {esNuevoPropietario && (
-                <DatosPropietario onUpdate={setPropietario} />
-            )}
-        </Desplegable>
+            {/* Datos del Propietario */}
+            <Desplegable title="Datos del Propietario">
+                <div>
+                    <label>Seleccionar Propietario:</label>
+                    <select
+                        value={propietarioSeleccionado}
+                        onChange={(e) => handlePropietarioSeleccionado(e.target.value)}
+                    >
+                        <option value="">Seleccione un propietario</option>
+                        {propietariosList.map((propietario) => (
+                            <option key={propietario.rut} value={propietario.rut}>
+                                {propietario.rut} - {propietario.nombres}
+                            </option>
+                        ))}
+                        <option value="nuevo">Crear nuevo propietario</option>
+                    </select>
+                </div>
 
-        {/* Datos de la Propiedad */}
-        <Desplegable title="Datos de la Propiedad">
-            <DatosPropiedad
-                onUpdate={(updatedPropiedad) => {
-                    console.log("Propiedad actualizada:", updatedPropiedad);
-                    setPropiedad(updatedPropiedad);
-                }}
-            />
-        </Desplegable>
+                {esNuevoPropietario && (
+                    <DatosPropietario onUpdate={setPropietario} />
+                )}
+            </Desplegable>
 
-        {/* Botones */}
-        <div className="botones-der">
-            <button onClick={handleCancel}>Volver</button>
-            <button onClick={handleSubmit}>Crear expediente</button>
+            {/* Botones */}
+            <div className="botones-der">
+                <button onClick={handleCancel}>Volver</button>
+                <button onClick={handleSubmit}>Crear expediente</button>
+            </div>
         </div>
-    </div>
-);
+    );
 }
 
 

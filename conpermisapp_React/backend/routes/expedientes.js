@@ -192,28 +192,9 @@ router.post('/', async (req, res) => {
                         INSERT INTO Propietario (rut, nombres, apellidos, email, telefono)
                         VALUES (@rut, @nombres, @apellidos, @email, @telefono)
                     `);
+                console.log("Nuevo propietario creado:", propietario);
             }
         }
-
-        // // Insertar propiedad
-        // const propiedadResult = await pool.request()
-        //     .input("direccion", sql.VarChar, propiedad.direccion)
-        //     .input("comuna", sql.VarChar, propiedad.comuna)
-        //     .input("region", sql.VarChar, propiedad.region)
-        //     .input("rolSII", sql.VarChar, propiedad.rolSII)
-        //     .input("inscFojas", sql.VarChar, propiedad.inscFojas)
-        //     .input("inscNumero", sql.VarChar, propiedad.InscNumero)
-        //     .input("inscYear", sql.Int, propiedad.InscYear)
-        //     .input("numPisos", sql.VarChar, propiedad.numPisos)
-        //     .input("m2", sql.VarChar, propiedad.m2)
-        //     .input("destino", sql.VarChar, propiedad.destino)
-        //     .query(`
-        //         INSERT INTO Propiedad (direccion, comuna, region, rolSII, inscFojas, inscNumero, inscYear, numPisos, m2, destino)
-        //         OUTPUT Inserted.id
-        //         VALUES (@direccion, @comuna, @region, @rolSII, @inscFojas, @InscNumero, @InscYear, @numPisos, @m2, @destino)
-        //     `);
-
-        // const propiedadId = propiedadResult.recordset[0].id;
 
         // Crear el expediente
         const expedienteResult = await pool.request()
@@ -223,7 +204,6 @@ router.post('/', async (req, res) => {
             .input("subtipo", sql.VarChar, subtipo)
             .input("propietarioRut", sql.VarChar, propietario.rut)
             .input("estadoExpedienteId", sql.Int, 1) // Valor por defecto
-            // .input("propiedadId", sql.Int, propiedadId)
             .query(`
                 INSERT INTO Expedientes (descripcion, Usuario_email, tipo, subtipo, Propietario_rut)
                 OUTPUT Inserted.id
@@ -233,9 +213,16 @@ router.post('/', async (req, res) => {
         const expedienteId = expedienteResult.recordset[0].id;
         console.log("Expediente creado con ID:", expedienteId);
 
+        if (!expedienteId) {
+            console.error("No se pudo obtener el ID del expediente.");
+            return res.status(500).json({ error: "No se pudo crear el expediente correctamente." });
+        }
+
+        console.log("Expediente creado con ID:", expedienteId);
+
         res.status(201).json({
             message: "Expediente creado exitosamente.",
-            expedienteId,
+            id: expedienteId,
         });
     } catch (err) {
         console.error("Error al crear el expediente:", err);
@@ -244,95 +231,6 @@ router.post('/', async (req, res) => {
 });
 
 
-
-// POST nuevo expediente ajustado a los datos enviados desde el frontend
-router.post('/simple', async (req, res) => {
-    const { propiedad, propietario } = req.body;
-
-    if (!propiedad || !propietario) {
-        return res.status(400).json({ error: "Faltan datos obligatorios: propiedad o propietario." });
-    }
-
-    try {
-        const pool = await getConnection();
-
-        // Verificar si el propietario existe
-        const propietarioExistente = await pool.request()
-            .input("rut", sql.VarChar, propietario.rut)
-            .query("SELECT * FROM Propietario WHERE rut = @rut");
-
-        if (propietarioExistente.recordset.length === 0) {
-            // Crear propietario si no existe
-            await pool.request()
-                .input("rut", sql.VarChar, propietario.rut)
-                .input("nombres", sql.VarChar, propietario.nombres)
-                .input("apellidos", sql.VarChar, propietario.apellidos || null)
-                .input("email", sql.VarChar, propietario.email || null)
-                .input("telefono", sql.Int, propietario.telefono || null)
-                .query(`
-                    INSERT INTO Propietario (
-                        rut,
-                        nombres,
-                        apellidos,
-                        email,
-                        telefono
-                    ) VALUES (
-                        @rut,
-                        @nombres,
-                        @apellidos,
-                        @email,
-                        @telefono
-                    )
-                `);
-        }
-
-        // Crear la propiedad
-        const resultPropiedad = await pool.request()
-            .input("direccion", sql.VarChar, propiedad.direccion)
-            .input("numero", sql.Int, propiedad.numero)
-            .input("comuna", sql.VarChar, propiedad.comuna)
-            .input("region", sql.VarChar, propiedad.region)
-            .input("rolSII", sql.VarChar, propiedad.rolSII)
-            .query(`
-                INSERT INTO Propiedad (
-                    direccion,
-                    numero,
-                    comuna,
-                    region,
-                    rolSII
-                ) OUTPUT Inserted.id VALUES (
-                    @direccion,
-                    @numero,
-                    @comuna,
-                    @region,
-                    @rolSII
-                )
-            `);
-
-        const propiedadId = resultPropiedad.recordset[0].id;
-
-        // Crear el expediente
-        const resultExpediente = await pool.request()
-            .input("propietarioRut", sql.VarChar, propietario.rut)
-            .input("propiedadId", sql.Int, propiedadId)
-            .query(`
-                INSERT INTO Expedientes (
-                    Propietario_rut,
-                    Propiedad_id
-                ) OUTPUT Inserted.id VALUES (
-                    @propietarioRut,
-                    @propiedadId
-                )
-            `);
-
-        const expedienteId = resultExpediente.recordset[0].id;
-
-        res.status(201).json({ message: "Expediente creado exitosamente.", expedienteId });
-    } catch (err) {
-        console.error("Error al crear el expediente:", err);
-        res.status(500).json({ error: "Error al crear el expediente." });
-    }
-});
 
 
 // PUT /expedientes/:id - Actualizar un expediente por ID
