@@ -147,7 +147,8 @@ function ExpedienteFormPage() {
             if(data.id) {
                 console.log("Expediente creado con ID:", data.id);
                 //redirigir
-                navigate(`/expedientes/${data.id}`);
+                alert("Expediente exitosamente creado. Ahora serás redirigido a la pagina de detalle del expediente para que sigas completando los siguiente datos necesarios ")
+                navigate(`/detalle/${data.id}`);
             } else {
                 console.error("El backend no devolvió un ID válido para el expediente.");
                 alert("No se pudo obtener el ID del expediente. Inténtelo nuevamente.");
@@ -163,7 +164,7 @@ function ExpedienteFormPage() {
 
     return (
         <div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px" }}>
-            <h2>Crear Expediente</h2>
+            <h2>Crear Expediente: {tipoNombre} - {subtipoNombre}</h2>
             {/* Descripción */}
             <div>
                 <label>Descripción:</label>

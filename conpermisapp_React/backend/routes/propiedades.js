@@ -17,31 +17,86 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET /propiedades/:id
-// Obtener una propiedad por su ID
-router.get('/:id', async (req, res) => {
-    const { id } = req.params;
+// // GET /propiedades/:id
+// // Obtener una propiedad por su ID
+// router.get('/:id', async (req, res) => {
+//     const { id } = req.params;
+
+//     try {
+//         const pool = await getConnection();
+//         const result = await pool.request()
+//             .input('id', sql.Int, id)
+//             .query(`
+//                 SELECT * 
+//                 FROM Propiedad 
+//                 WHERE id = @id
+//             `);
+
+//         if (result.recordset.length === 0) {
+//             return res.status(404).json({ error: 'Propiedad no encontrada' });
+//         }
+
+//         res.status(200).json(result.recordset[0]);
+//     } catch (error) {
+//         console.error('Error al obtener la propiedad:', error);
+//         res.status(500).json({ error: 'Error al obtener la propiedad' });
+//     }
+// });
+
+
+// GET /propiedades/:rolSII
+// Obtener una propiedad por su rolSII
+router.get('/:rolSII', async (req, res) => {
+    const { rolSII } = req.params;
 
     try {
         const pool = await getConnection();
         const result = await pool.request()
-            .input('id', sql.Int, id)
+            .input('rolSII', sql.VarChar, rolSII)
             .query(`
                 SELECT * 
                 FROM Propiedad 
-                WHERE id = @id
+                WHERE rolSII = @rolSII
             `);
 
         if (result.recordset.length === 0) {
-            return res.status(404).json({ error: 'Propiedad no encontrada' });
+            return res.status(404).json({ error: 'Propiedad no encontrada.' });
         }
 
         res.status(200).json(result.recordset[0]);
     } catch (error) {
         console.error('Error al obtener la propiedad:', error);
-        res.status(500).json({ error: 'Error al obtener la propiedad' });
+        res.status(500).json({ error: 'Error al obtener la propiedad.' });
     }
 });
+
+// GET /propiedades/expedientes/:expedienteId
+// Obtener propiedades asociadas a un expediente específico
+router.get('/expedientes/:expedienteId', async (req, res) => {
+    const { expedienteId } = req.params;
+
+    try {
+        const pool = await getConnection();
+        const result = await pool.request()
+            .input('expedienteId', sql.Int, expedienteId)
+            .query(`
+                SELECT * 
+                FROM Propiedad 
+                WHERE Expediente_id = @expedienteId
+            `);
+
+        if (result.recordset.length === 0) {
+            return res.status(404).json({ error: 'No se encontraron propiedades para este expediente' });
+        }
+
+        res.status(200).json(result.recordset);
+    } catch (error) {
+        console.error('Error al obtener las propiedades:', error);
+        res.status(500).json({ error: 'Error al obtener las propiedades' });
+    }
+});
+
+
 
 // POST /propiedades/
 // Crear una nueva propiedad
@@ -58,6 +113,7 @@ router.post('/', async (req, res) => {
         numPisos,
         m2,
         destino,
+        expedienteId
     } = req.body;
 
     // Validación de campos obligatorios
@@ -69,7 +125,7 @@ router.post('/', async (req, res) => {
         const pool = await getConnection();
 
         // Insertar propiedad
-        await pool.request()
+        const result = await pool.request()
             .input('rolSII', sql.VarChar, rolSII)
             .input('direccion', sql.VarChar, direccion)
             .input('numero', sql.Int, numero || null)
@@ -81,21 +137,28 @@ router.post('/', async (req, res) => {
             .input('numPisos', sql.Int, numPisos || null)
             .input('m2', sql.Decimal(10, 2), m2 || null)
             .input('destino', sql.VarChar, destino || null)
+            .input('expedienteId', sql.Int, expedienteId || null)
             .query(`
                 INSERT INTO Propiedad (
                     rolSII, direccion, numero, comuna, region,
-                    inscFojas, inscNumero, inscYear, numPisos, m2, destino
-                ) VALUES (
+                    inscFojas, inscNumero, inscYear, numPisos, m2, destino, Expediente_id
+                )
+                OUTPUT Inserted.*
+                VALUES (
                     @rolSII, @direccion, @numero, @comuna, @region,
-                    @inscFojas, @inscNumero, @inscYear, @numPisos, @m2, @destino
+                    @inscFojas, @inscNumero, @inscYear, @numPisos, @m2, @destino, @expedienteId
                 )
             `);
 
-        res.status(201).json({ message: 'Propiedad creada exitosamente' });
+        res.status(201).json({
+            message: 'Propiedad creada exitosamente.',
+            propiedad: result.recordset[0]
+        });
     } catch (error) {
         console.error('Error al crear la propiedad:', error);
         res.status(500).json({ error: 'Error al crear la propiedad.' });
     }
 });
+
 
 module.exports = router;

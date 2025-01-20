@@ -222,7 +222,7 @@ router.post('/', async (req, res) => {
 
         res.status(201).json({
             message: "Expediente creado exitosamente.",
-            id: expedienteId,
+            id: expedienteId, 
         });
     } catch (err) {
         console.error("Error al crear el expediente:", err);
