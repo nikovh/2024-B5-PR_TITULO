@@ -17,6 +17,7 @@ const expedienteRoutes    = require('./routes/expedientes');
 const formularioRoutes    = require('./routes/formularios');
 const usuariosRoutes      = require('./routes/usuarios');
 const propietariosRoutes  = require('./routes/propietarios');
+const propiedadesRoutes   = require('./routes/propiedades')
 
 
 // Usa las rutas en el servidor
@@ -28,6 +29,7 @@ app.use('/expedientes', expedienteRoutes);
 app.use('/formularios', formularioRoutes);
 app.use('/usuarios', usuariosRoutes);
 app.use('/propietarios', propietariosRoutes);
+app.use('/propiedades', propiedadesRoutes)
 // app.use('auth', authRoutes)
 
 

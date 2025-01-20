@@ -94,7 +94,7 @@ const DatosPropietario = ({ onUpdate }) => {
             name="apellidos"
             value={propietario.apellidos}
             onChange={handleChange}
-            maxLength={50}
+            maxLength={25}
           />
         </div>
         <div>
