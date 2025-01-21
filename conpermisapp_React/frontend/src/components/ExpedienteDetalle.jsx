@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Desplegable from "./FormPage/Desplegable";
+import DatosPropiedad from "./FormPage/DatosPropiedad";
+import CargaOcupacion from "./Formularios/CargaOcupacion";
 
 const ExpedienteDetalle = () => {
     const { id } = useParams(); 
     const [expediente, setExpediente] = useState(null);
     const [propiedad, setPropiedad] = useState(null); // Estado para la propiedad
+    const [loadingExpediente, setLoadingExpediente] = useState(true); // Estado para expediente
+    const [loadingPropiedad, setLoadingPropiedad] = useState(false); // Estado para propiedad
     const navigate = useNavigate();
-
-    const [showForm, setShowForm] = useState(false);
-
-    const alternarVisibilidadForm = () => {
-        setShowForm(!showForm);
-    };
 
     // Obtener el expediente por ID
     useEffect(() => {
@@ -33,7 +31,9 @@ const ExpedienteDetalle = () => {
                 }
             } catch (err) {
                 console.error("Error al obtener el expediente:", err);
-            } 
+            } finally {
+                setLoadingExpediente(false);
+            }
         };
 
         const fetchPropiedad = async (expedienteId) => {
@@ -53,6 +53,10 @@ const ExpedienteDetalle = () => {
 
         fetchExpediente();
     }, [id]);
+
+    if (loadingExpediente) {
+        return <p>Cargando expediente...</p>;
+    }
 
     if (!expediente) {
         return <p>No se encontró el expediente.</p>;
@@ -102,19 +106,9 @@ const ExpedienteDetalle = () => {
             <Desplegable title="Formulario 2: Documentación requerida">
                 <p>Aquí va el contenido del formulario 2...</p>
             </Desplegable>
-
-            {/* <Desplegable title="Formulario 3: Cálculo de carga de ocupación">
-                {showForm && (
-                    <div className="formulario-content">
-                        <FormularioPrueba />
-                        <GenerarPdfformulario />
-                    </div>
-                )}
-            </Desplegable> */}
-            <Desplegable title="Formulario 3: Cálculo de carga de ocupación">
-                <CargaOcupacionForm />
+            <Desplegable title="Formulario 3: Carga de Ocupación">
+                <CargaOcupacion />
             </Desplegable>
-            <GenerarPdfformulario />
 
             <button onClick={handleCancel}>Volver</button>
         </div>
