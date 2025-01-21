@@ -9,8 +9,8 @@ const DatosPropiedad = ({ propiedad, onSave, onCancel }) => {
         comuna: '',
         region: '',
         inscFojas: '',
-        InscNumero: '',
-        InscYear: '',
+        inscNumero: '',
+        inscYear: '',
         numPisos: '',
         m2: '',
         destino: '',
@@ -35,7 +35,9 @@ const DatosPropiedad = ({ propiedad, onSave, onCancel }) => {
 
     // Actualizar el formulario cuando se pasa una propiedad desde el padre
     useEffect(() => {
-        if(propiedad) setFormData(propiedad);
+        if(propiedad) {
+            setFormData(propiedad);
+        }
     }, [propiedad]);
 
     // Manejar cambios en los campos del formulario
@@ -52,7 +54,7 @@ const DatosPropiedad = ({ propiedad, onSave, onCancel }) => {
             error = validarRolSII(value);
         } else if (['direccion', 'comuna', 'region', 'destino'].includes(name)) {
             error = validarTexto(value);
-        } else if (['numero', 'InscNumero', 'InscYear', 'numPisos', 'm2'].includes(name)) {
+        } else if (['numero', 'inscNumero', 'inscYear', 'numPisos', 'm2'].includes(name)) {
             error = validarNumeroPositivo(Number(value));
         }
 
@@ -72,8 +74,8 @@ const DatosPropiedad = ({ propiedad, onSave, onCancel }) => {
         nuevosErrores.region = validarTexto(formData.region);
         nuevosErrores.destino = validarTexto(formData.destino);
         nuevosErrores.numero = validarNumeroPositivo(Number(formData.numero));
-        nuevosErrores.InscNumero = validarNumeroPositivo(Number(formData.InscNumero));
-        nuevosErrores.InscYear = validarNumeroPositivo(Number(formData.InscYear));
+        nuevosErrores.inscNumero = validarNumeroPositivo(Number(formData.inscNumero));
+        nuevosErrores.inscYear = validarNumeroPositivo(Number(formData.inscYear));
         nuevosErrores.numPisos = validarNumeroPositivo(Number(formData.numPisos));
         nuevosErrores.m2 = validarNumeroPositivo(Number(formData.m2));
 
@@ -99,8 +101,8 @@ const DatosPropiedad = ({ propiedad, onSave, onCancel }) => {
                 { label: "Comuna", name: "comuna" },
                 { label: "Región", name: "region" },
                 { label: "Inscripción en Fojas", name: "inscFojas" },
-                { label: "Inscripción Número", name: "InscNumero", type: "number" },
-                { label: "Año de Inscripción", name: "InscYear", type: "number" },
+                { label: "Inscripción Número", name: "inscNumero", type: "number" },
+                { label: "Año de Inscripción", name: "inscYear", type: "number" },
                 { label: "Número de Pisos", name: "numPisos", type: "number" },
                 { label: "Metros Cuadrados (m²)", name: "m2", type: "number", step: "0.01" },
                 { label: "Destino", name: "destino" },
