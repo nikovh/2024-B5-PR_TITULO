@@ -15,19 +15,21 @@ const DatosPropiedad = ({ onUpdate }) => {
         destino: '',
     });
 
-    const [errores, setErrores] = useState({
-        rolSII: '',
-        direccion: '',
-        numero: '',
-        comuna: '',
-        region: '',
-        inscFojas: '',
-        InscNumero: '',
-        InscYear: '',
-        numPisos: '',
-        m2: '',
-        destino: '',
-    });
+    // const [errores, setErrores] = useState({
+    //     rolSII: '',
+    //     direccion: '',
+    //     numero: '',
+    //     comuna: '',
+    //     region: '',
+    //     inscFojas: '',
+    //     InscNumero: '',
+    //     InscYear: '',
+    //     numPisos: '',
+    //     m2: '',
+    //     destino: '',
+    // });
+
+    const [errores, setErrores] = useState({});
 
     // Validadores
     const validarRolSII = (rol) => {
@@ -79,7 +81,8 @@ const DatosPropiedad = ({ onUpdate }) => {
         setPropiedad(nuevaPropiedad);
 
         // Calcular si todos los campos obligatorios son válidos
-        const datosValidos = Object.values({ ...errores, [name]: error }).every((err) => err === '') &&
+        const datosValidos = 
+            Object.values({ ...errores, [name]: error }).every((err) => err === '') &&
             nuevaPropiedad.rolSII &&
             nuevaPropiedad.direccion &&
             nuevaPropiedad.comuna &&
@@ -90,76 +93,103 @@ const DatosPropiedad = ({ onUpdate }) => {
         sendUpdate({ ...nuevaPropiedad, datosValidos: !!datosValidos });
     };
 
+    // return (
+    //     <div>
+    //         <form>
+    //             <div>
+    //                 <label>Rol SII:</label>
+    //                 <input name="rolSII" value={propiedad.rolSII} onChange={handleChange} />
+    //                 {errores.rolSII && <p style={{ color: 'red', fontSize: '12px' }}>{errores.rolSII}</p>}
+    //             </div>
+
+    //             <div>
+    //                 <label>Dirección:</label>
+    //                 <input name="direccion" value={propiedad.direccion} onChange={handleChange} />
+    //                 {errores.direccion && <p style={{ color: 'red', fontSize: '12px' }}>{errores.direccion}</p>}
+    //             </div>
+
+    //             <div>
+    //                 <label>Número:</label>
+    //                 <input name="numero" type="number" value={propiedad.numero} onChange={handleChange} />
+    //                 {errores.numero && <p style={{ color: 'red', fontSize: '12px' }}>{errores.numero}</p>}
+    //             </div>
+
+    //             <div>
+    //                 <label>Comuna:</label>
+    //                 <input name="comuna" value={propiedad.comuna} onChange={handleChange} />
+    //                 {errores.comuna && <p style={{ color: 'red', fontSize: '12px' }}>{errores.comuna}</p>}
+    //             </div>
+
+    //             <div>
+    //                 <label>Región:</label>
+    //                 <input name="region" value={propiedad.region} onChange={handleChange} />
+    //                 {errores.region && <p style={{ color: 'red', fontSize: '12px' }}>{errores.region}</p>}
+    //             </div>
+
+    //             <div>
+    //                 <label>Inscripción en Fojas:</label>
+    //                 <input name="inscFojas" value={propiedad.inscFojas} onChange={handleChange} />
+    //             </div>
+
+    //             <div>
+    //                 <label>Inscripción Número:</label>
+    //                 <input name="InscNumero" type="number" value={propiedad.InscNumero} onChange={handleChange} />
+    //                 {errores.InscNumero && <p style={{ color: 'red', fontSize: '12px' }}>{errores.InscNumero}</p>}
+    //             </div>
+
+    //             <div>
+    //                 <label>Año de Inscripción:</label>
+    //                 <input name="InscYear" type="number" value={propiedad.InscYear} onChange={handleChange} />
+    //                 {errores.InscYear && <p style={{ color: 'red', fontSize: '12px' }}>{errores.InscYear}</p>}
+    //             </div>
+
+    //             <div>
+    //                 <label>Número de Pisos:</label>
+    //                 <input name="numPisos" type="number" value={propiedad.numPisos} onChange={handleChange} />
+    //                 {errores.numPisos && <p style={{ color: 'red', fontSize: '12px' }}>{errores.numPisos}</p>}
+    //             </div>
+
+    //             <div>
+    //                 <label>Metros Cuadrados (m²):</label>
+    //                 <input name="m2" type="number" step="0.01" value={propiedad.m2} onChange={handleChange} />
+    //                 {errores.m2 && <p style={{ color: 'red', fontSize: '12px' }}>{errores.m2}</p>}
+    //             </div>
+
+    //             <div>
+    //                 <label>Destino:</label>
+    //                 <input name="destino" value={propiedad.destino} onChange={handleChange} />
+    //                 {errores.destino && <p style={{ color: 'red', fontSize: '12px' }}>{errores.destino}</p>}
+    //             </div>
+    //         </form>
+    //     </div>
+    // );
+
     return (
         <div>
             <form>
-                <div>
-                    <label>Rol SII:</label>
-                    <input name="rolSII" value={propiedad.rolSII} onChange={handleChange} />
-                    {errores.rolSII && <p style={{ color: 'red', fontSize: '12px' }}>{errores.rolSII}</p>}
-                </div>
-
-                <div>
-                    <label>Dirección:</label>
-                    <input name="direccion" value={propiedad.direccion} onChange={handleChange} />
-                    {errores.direccion && <p style={{ color: 'red', fontSize: '12px' }}>{errores.direccion}</p>}
-                </div>
-
-                <div>
-                    <label>Número:</label>
-                    <input name="numero" type="number" value={propiedad.numero} onChange={handleChange} />
-                    {errores.numero && <p style={{ color: 'red', fontSize: '12px' }}>{errores.numero}</p>}
-                </div>
-
-                <div>
-                    <label>Comuna:</label>
-                    <input name="comuna" value={propiedad.comuna} onChange={handleChange} />
-                    {errores.comuna && <p style={{ color: 'red', fontSize: '12px' }}>{errores.comuna}</p>}
-                </div>
-
-                <div>
-                    <label>Región:</label>
-                    <input name="region" value={propiedad.region} onChange={handleChange} />
-                    {errores.region && <p style={{ color: 'red', fontSize: '12px' }}>{errores.region}</p>}
-                </div>
-
-                <div>
-                    <label>Inscripción en Fojas:</label>
-                    <input name="inscFojas" value={propiedad.inscFojas} onChange={handleChange} />
-                </div>
-
-                <div>
-                    <label>Inscripción Número:</label>
-                    <input name="InscNumero" type="number" value={propiedad.InscNumero} onChange={handleChange} />
-                    {errores.InscNumero && <p style={{ color: 'red', fontSize: '12px' }}>{errores.InscNumero}</p>}
-                </div>
-
-                <div>
-                    <label>Año de Inscripción:</label>
-                    <input name="InscYear" type="number" value={propiedad.InscYear} onChange={handleChange} />
-                    {errores.InscYear && <p style={{ color: 'red', fontSize: '12px' }}>{errores.InscYear}</p>}
-                </div>
-
-                <div>
-                    <label>Número de Pisos:</label>
-                    <input name="numPisos" type="number" value={propiedad.numPisos} onChange={handleChange} />
-                    {errores.numPisos && <p style={{ color: 'red', fontSize: '12px' }}>{errores.numPisos}</p>}
-                </div>
-
-                <div>
-                    <label>Metros Cuadrados (m²):</label>
-                    <input name="m2" type="number" step="0.01" value={propiedad.m2} onChange={handleChange} />
-                    {errores.m2 && <p style={{ color: 'red', fontSize: '12px' }}>{errores.m2}</p>}
-                </div>
-
-                <div>
-                    <label>Destino:</label>
-                    <input name="destino" value={propiedad.destino} onChange={handleChange} />
-                    {errores.destino && <p style={{ color: 'red', fontSize: '12px' }}>{errores.destino}</p>}
-                </div>
+                {[
+                    { label: "Rol SII", name: "rolSII" },
+                    { label: "Dirección", name: "direccion" },
+                    { label: "Número", name: "numero", type: "number" },
+                    { label: "Comuna", name: "comuna" },
+                    { label: "Región", name: "region" },
+                    { label: "Inscripción en Fojas", name: "inscFojas" },
+                    { label: "Inscripción Número", name: "InscNumero", type: "number" },
+                    { label: "Año de Inscripción", name: "InscYear", type: "number" },
+                    { label: "Número de Pisos", name: "numPisos", type: "number" },
+                    { label: "Metros Cuadrados (m²)", name: "m2", type: "number", step: "0.01" },
+                    { label: "Destino", name: "destino" },
+                ].map(({ label, name, type = "text", step }) => (
+                    <div key={name}>
+                        <label>{label}:</label>
+                        <input name={name} type={type} step={step} value={propiedad[name]} onChange={handleChange} />
+                        {errores[name] && <p style={{ color: "red", fontSize: "12px" }}>{errores[name]}</p>}
+                    </div>
+                ))}
             </form>
         </div>
     );
+
 };
 
 export default DatosPropiedad;
