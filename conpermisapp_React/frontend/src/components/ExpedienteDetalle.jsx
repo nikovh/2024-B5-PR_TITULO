@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Desplegable from "./FormPage/Desplegable";
-import DatosPropiedad from "./FormPage/DatosPropiedad";
 
 const ExpedienteDetalle = () => {
     const { id } = useParams(); 
     const [expediente, setExpediente] = useState(null);
     const [propiedad, setPropiedad] = useState(null); // Estado para la propiedad
     const navigate = useNavigate();
+
+    const [showForm, setShowForm] = useState(false);
+
+    const alternarVisibilidadForm = () => {
+        setShowForm(!showForm);
+    };
 
     // Obtener el expediente por ID
     useEffect(() => {
@@ -97,6 +102,19 @@ const ExpedienteDetalle = () => {
             <Desplegable title="Formulario 2: Documentación requerida">
                 <p>Aquí va el contenido del formulario 2...</p>
             </Desplegable>
+
+            {/* <Desplegable title="Formulario 3: Cálculo de carga de ocupación">
+                {showForm && (
+                    <div className="formulario-content">
+                        <FormularioPrueba />
+                        <GenerarPdfformulario />
+                    </div>
+                )}
+            </Desplegable> */}
+            <Desplegable title="Formulario 3: Cálculo de carga de ocupación">
+                <CargaOcupacionForm />
+            </Desplegable>
+            <GenerarPdfformulario />
 
             <button onClick={handleCancel}>Volver</button>
         </div>

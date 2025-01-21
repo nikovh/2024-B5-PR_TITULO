@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import styles from '../../src/formularioprueba.css'
+import "../../styles/formularios.css";
 
 function CargaOcupacionForm() {
   const [recintos, setRecintos] = useState([
@@ -37,9 +37,9 @@ function CargaOcupacionForm() {
   };
 
   return (
-    <div className={styles.container}>
+    <div className="container">
       <h2>Cálculo de Carga de Ocupación</h2>
-      <table className={styles.table}>
+      <table className="table">
         <thead>
           <tr>
             <th>Nivel</th>
@@ -63,7 +63,7 @@ function CargaOcupacionForm() {
           ))}
         </tbody>
       </table>
-      <button className={styles.button} onClick={agregarRecinto}>Agregar Recinto</button>
+      <button className="button" onClick={agregarRecinto}>Agregar Recinto</button>
     </div>
   );
 }
