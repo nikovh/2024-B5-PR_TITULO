@@ -1,7 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const DatosPropiedad = ({ onUpdate }) => {
-    const [propiedad, setPropiedad] = useState({
+const DatosPropiedad = ({ propiedad, onSave, onCancel }) => {
+    // estado apra los datos del form
+    const [formData, setFormData] = useState({
         rolSII: '',
         direccion: '',
         numero: '',
@@ -14,21 +15,8 @@ const DatosPropiedad = ({ onUpdate }) => {
         m2: '',
         destino: '',
     });
-
-    // const [errores, setErrores] = useState({
-    //     rolSII: '',
-    //     direccion: '',
-    //     numero: '',
-    //     comuna: '',
-    //     region: '',
-    //     inscFojas: '',
-    //     InscNumero: '',
-    //     InscYear: '',
-    //     numPisos: '',
-    //     m2: '',
-    //     destino: '',
-    // });
-
+    
+    // Estado para los errores del formulario
     const [errores, setErrores] = useState({});
 
     // Validadores
@@ -45,29 +33,21 @@ const DatosPropiedad = ({ onUpdate }) => {
         return numero > 0 ? '' : 'Debe ser un número positivo.';
     };
 
-    // Función debounce
-    const debounce = (func, delay) => {
-        let timeout;
-        return (...args) => {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func(...args), delay);
-        };
-    };
+    // Actualizar el formulario cuando se pasa una propiedad desde el padre
+    useEffect(() => {
+        if(propiedad) setFormData(propiedad);
+    }, [propiedad]);
 
-    // Enviar datos con debounce
-    const sendUpdate = useCallback(
-        debounce((updatedPropiedad) => {
-            onUpdate(updatedPropiedad);
-        }, 300), // 300ms de retraso
-        [onUpdate]
-    );
-
+    // Manejar cambios en los campos del formulario
     const handleChange = (e) => {
         const { name, value } = e.target;
-        let nuevaPropiedad = { ...propiedad, [name]: value };
-        let error = '';
+        
+        // Actualizar el estado del formulario
+        setFormData((prev) => ({ ...prev, [name]: value}));
+
 
         // Validar cada campo según su tipo
+        let error = '';
         if (name === 'rolSII') {
             error = validarRolSII(value);
         } else if (['direccion', 'comuna', 'region', 'destino'].includes(name)) {
@@ -76,120 +56,74 @@ const DatosPropiedad = ({ onUpdate }) => {
             error = validarNumeroPositivo(Number(value));
         }
 
-        // Actualizar errores y propiedad
+        // Actualizar errores 
         setErrores((prevErrores) => ({ ...prevErrores, [name]: error }));
-        setPropiedad(nuevaPropiedad);
+    };
+    
+    // Manejar el envío del formulario
+    const handleSubmit = (e) => {
+        e.preventDefault();
 
-        // Calcular si todos los campos obligatorios son válidos
-        const datosValidos = 
-            Object.values({ ...errores, [name]: error }).every((err) => err === '') &&
-            nuevaPropiedad.rolSII &&
-            nuevaPropiedad.direccion &&
-            nuevaPropiedad.comuna &&
-            nuevaPropiedad.region &&
-            nuevaPropiedad.destino;
+        // Validar todos los campos antes de enviar
+        const nuevosErrores = {};
+        nuevosErrores.rolSII = validarRolSII(formData.rolSII);
+        nuevosErrores.direccion = validarTexto(formData.direccion);
+        nuevosErrores.comuna = validarTexto(formData.comuna);
+        nuevosErrores.region = validarTexto(formData.region);
+        nuevosErrores.destino = validarTexto(formData.destino);
+        nuevosErrores.numero = validarNumeroPositivo(Number(formData.numero));
+        nuevosErrores.InscNumero = validarNumeroPositivo(Number(formData.InscNumero));
+        nuevosErrores.InscYear = validarNumeroPositivo(Number(formData.InscYear));
+        nuevosErrores.numPisos = validarNumeroPositivo(Number(formData.numPisos));
+        nuevosErrores.m2 = validarNumeroPositivo(Number(formData.m2));
 
-        // Enviar datos actualizados al componente padre
-        sendUpdate({ ...nuevaPropiedad, datosValidos: !!datosValidos });
+        setErrores(nuevosErrores);
+
+        // Si hay errores, no proceder
+        const hayErrores = Object.values(nuevosErrores).some((error) => error !== "");
+        if (hayErrores) {
+            alert("Por favor corrige los errores antes de guardar.");
+            return;
+        }
+
+        // Enviar los datos al componente padre
+        onSave(formData);
     };
 
-    // return (
-    //     <div>
-    //         <form>
-    //             <div>
-    //                 <label>Rol SII:</label>
-    //                 <input name="rolSII" value={propiedad.rolSII} onChange={handleChange} />
-    //                 {errores.rolSII && <p style={{ color: 'red', fontSize: '12px' }}>{errores.rolSII}</p>}
-    //             </div>
-
-    //             <div>
-    //                 <label>Dirección:</label>
-    //                 <input name="direccion" value={propiedad.direccion} onChange={handleChange} />
-    //                 {errores.direccion && <p style={{ color: 'red', fontSize: '12px' }}>{errores.direccion}</p>}
-    //             </div>
-
-    //             <div>
-    //                 <label>Número:</label>
-    //                 <input name="numero" type="number" value={propiedad.numero} onChange={handleChange} />
-    //                 {errores.numero && <p style={{ color: 'red', fontSize: '12px' }}>{errores.numero}</p>}
-    //             </div>
-
-    //             <div>
-    //                 <label>Comuna:</label>
-    //                 <input name="comuna" value={propiedad.comuna} onChange={handleChange} />
-    //                 {errores.comuna && <p style={{ color: 'red', fontSize: '12px' }}>{errores.comuna}</p>}
-    //             </div>
-
-    //             <div>
-    //                 <label>Región:</label>
-    //                 <input name="region" value={propiedad.region} onChange={handleChange} />
-    //                 {errores.region && <p style={{ color: 'red', fontSize: '12px' }}>{errores.region}</p>}
-    //             </div>
-
-    //             <div>
-    //                 <label>Inscripción en Fojas:</label>
-    //                 <input name="inscFojas" value={propiedad.inscFojas} onChange={handleChange} />
-    //             </div>
-
-    //             <div>
-    //                 <label>Inscripción Número:</label>
-    //                 <input name="InscNumero" type="number" value={propiedad.InscNumero} onChange={handleChange} />
-    //                 {errores.InscNumero && <p style={{ color: 'red', fontSize: '12px' }}>{errores.InscNumero}</p>}
-    //             </div>
-
-    //             <div>
-    //                 <label>Año de Inscripción:</label>
-    //                 <input name="InscYear" type="number" value={propiedad.InscYear} onChange={handleChange} />
-    //                 {errores.InscYear && <p style={{ color: 'red', fontSize: '12px' }}>{errores.InscYear}</p>}
-    //             </div>
-
-    //             <div>
-    //                 <label>Número de Pisos:</label>
-    //                 <input name="numPisos" type="number" value={propiedad.numPisos} onChange={handleChange} />
-    //                 {errores.numPisos && <p style={{ color: 'red', fontSize: '12px' }}>{errores.numPisos}</p>}
-    //             </div>
-
-    //             <div>
-    //                 <label>Metros Cuadrados (m²):</label>
-    //                 <input name="m2" type="number" step="0.01" value={propiedad.m2} onChange={handleChange} />
-    //                 {errores.m2 && <p style={{ color: 'red', fontSize: '12px' }}>{errores.m2}</p>}
-    //             </div>
-
-    //             <div>
-    //                 <label>Destino:</label>
-    //                 <input name="destino" value={propiedad.destino} onChange={handleChange} />
-    //                 {errores.destino && <p style={{ color: 'red', fontSize: '12px' }}>{errores.destino}</p>}
-    //             </div>
-    //         </form>
-    //     </div>
-    // );
-
     return (
-        <div>
-            <form>
-                {[
-                    { label: "Rol SII", name: "rolSII" },
-                    { label: "Dirección", name: "direccion" },
-                    { label: "Número", name: "numero", type: "number" },
-                    { label: "Comuna", name: "comuna" },
-                    { label: "Región", name: "region" },
-                    { label: "Inscripción en Fojas", name: "inscFojas" },
-                    { label: "Inscripción Número", name: "InscNumero", type: "number" },
-                    { label: "Año de Inscripción", name: "InscYear", type: "number" },
-                    { label: "Número de Pisos", name: "numPisos", type: "number" },
-                    { label: "Metros Cuadrados (m²)", name: "m2", type: "number", step: "0.01" },
-                    { label: "Destino", name: "destino" },
-                ].map(({ label, name, type = "text", step }) => (
-                    <div key={name}>
-                        <label>{label}:</label>
-                        <input name={name} type={type} step={step} value={propiedad[name]} onChange={handleChange} />
-                        {errores[name] && <p style={{ color: "red", fontSize: "12px" }}>{errores[name]}</p>}
-                    </div>
-                ))}
-            </form>
-        </div>
+        <form onSubmit={handleSubmit}>
+            {[
+                { label: "Rol SII", name: "rolSII" },
+                { label: "Dirección", name: "direccion" },
+                { label: "Número", name: "numero", type: "number" },
+                { label: "Comuna", name: "comuna" },
+                { label: "Región", name: "region" },
+                { label: "Inscripción en Fojas", name: "inscFojas" },
+                { label: "Inscripción Número", name: "InscNumero", type: "number" },
+                { label: "Año de Inscripción", name: "InscYear", type: "number" },
+                { label: "Número de Pisos", name: "numPisos", type: "number" },
+                { label: "Metros Cuadrados (m²)", name: "m2", type: "number", step: "0.01" },
+                { label: "Destino", name: "destino" },
+            ].map(({ label, name, type = "text", step }) => (
+                <div key={name} style={{ marginBottom: "10px" }}>
+                    <label>{label}:</label>
+                    <input
+                        name={name}
+                        type={type}
+                        step={step}
+                        value={formData[name] || ""}
+                        onChange={handleChange}
+                        required
+                    />
+                    {errores[name] && <p style={{ color: "red", fontSize: "12px" }}>{errores[name]}</p>}
+                </div>
+            ))}
+            <button type="submit">Guardar</button>
+            <button type="button" onClick={onCancel} style={{ marginLeft: "10px" }}>
+                Cancelar
+            </button>
+        </form>
     );
-
 };
 
 export default DatosPropiedad;

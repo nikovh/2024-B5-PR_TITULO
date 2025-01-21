@@ -94,27 +94,22 @@ const ExpedienteDetalle = () => {
             <p><strong>Propietario:</strong> {expediente.propietarioNombres} {expediente.propietarioApellidos}</p>
 
             {/* Desplegable para Propiedad */}
-
-            {/* <Desplegable title="Datos de la Propiedad">
-                {loadingPropiedad ? (
-                    <p>Cargando datos de la propiedad...</p>
-                ) : propiedad ? (
+            <Desplegable title="Datos de la Propiedad">
+                {propiedad && !isEditing ? (
                     <>
                         <p><strong>Rol SII:</strong> {propiedad.rolSII}</p>
                         <p><strong>Dirección:</strong> {propiedad.direccion}</p>
                         <p><strong>Comuna:</strong> {propiedad.comuna}</p>
                         <p><strong>Región:</strong> {propiedad.region}</p>
-                        <p><strong>Número:</strong> {propiedad.numero}</p>
-                        <p><strong>Inscripción en Fojas:</strong> {propiedad.inscFojas}</p>
-                        <p><strong>Destino:</strong> {propiedad.destino}</p>
+                        <button onClick={() => setIsEditing(true)}>Editar Propiedad</button>
                     </>
                 ) : (
-                    <p>No se encontró información de la propiedad asociada.</p>
+                    <DatosPropiedad
+                        propiedad={propiedad}
+                        onSave={handleSavePropiedad}
+                        onCancel={() => setIsEditing(false)}
+                    />
                 )}
-            </Desplegable> */}
-
-            <Desplegable title="Datos de la Propiedad">
-                <DatosPropiedad onUpdate={(nuevaPropiedad) => console.log("Propiedad actualizada:", nuevaPropiedad)} />
             </Desplegable>
 
             {/* Otros formularios */}
