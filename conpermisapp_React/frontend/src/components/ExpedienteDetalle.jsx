@@ -8,8 +8,7 @@ const ExpedienteDetalle = () => {
     const { id } = useParams(); 
     const [expediente, setExpediente] = useState(null);
     const [propiedad, setPropiedad] = useState(null); // Estado para la propiedad
-    const [loadingExpediente, setLoadingExpediente] = useState(true); // Estado para expediente
-    const [loadingPropiedad, setLoadingPropiedad] = useState(false); // Estado para propiedad
+    const [isEditing, setIsEditing] = useState(false);
     const navigate = useNavigate();
 
     // Obtener el expediente por ID
@@ -31,9 +30,7 @@ const ExpedienteDetalle = () => {
                 }
             } catch (err) {
                 console.error("Error al obtener el expediente:", err);
-            } finally {
-                setLoadingExpediente(false);
-            }
+            } 
         };
 
         const fetchPropiedad = async (expedienteId) => {
@@ -50,13 +47,34 @@ const ExpedienteDetalle = () => {
             }
         };
         
-
         fetchExpediente();
     }, [id]);
 
-    if (loadingExpediente) {
-        return <p>Cargando expediente...</p>;
-    }
+    const handleSavePropiedad = async (nuevaPropiedad) => {
+        try {
+            const response = await fetch(
+                propiedad
+                    ? `http://localhost:4000/propiedades/${propiedad.id}` // Actualización
+                    : `http://localhost:4000/propiedades`, // Creación
+                {
+                    method: propiedad ? "PUT" : "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ ...nuevaPropiedad, expedienteId: expediente.expedienteId }),
+                }
+            );
+
+            if (response.ok) {
+                const data = await response.json();
+                setPropiedad(data);
+                setIsEditing(false); // Salir del modo edición
+                alert(propiedad ? "Propiedad actualizada exitosamente" : "Propiedad creada exitosamente");
+            } else {
+                alert("Error al guardar la propiedad");
+            }
+        } catch (err) {
+            console.error("Error al guardar la propiedad:", err);
+        }
+    };
 
     if (!expediente) {
         return <p>No se encontró el expediente.</p>;
