@@ -2,7 +2,6 @@ import React from "react";
 import { generarPdfFormulario } from "../utils/pdfUtils";
 
 function GenerarPdfFormulario({ formData }) {
-    
     const handleDescargarPDF = () => {
         const doc = generarPdfFormulario(formData);
         doc.save(`formulario-${formData.id}.pdf`);
@@ -17,8 +16,8 @@ function GenerarPdfFormulario({ formData }) {
     return (
         <div>
             <h3>Generar PDF del Formulario</h3>
+            <button onClick={handleVerPDF}>Vista Previa del PDF</button>
             <button onClick={handleDescargarPDF}>Descargar PDF</button>
-            <button onClick={handleVerPDF}>Ver PDF en nueva pestaña</button>
         </div>
     );
 }
