@@ -14,8 +14,7 @@ const DatosHeader = ({ expedienteId }) => {
         !datos.propietario ||
         !datos.usuario ||
         !datos.tipoExpediente ||
-        !datos.subTipoExpediente ||
-        !datos.estadoExpediente
+        !datos.subTipoExpediente
     ) {
         return <p>Cargando datos...</p>;
     }
@@ -28,7 +27,6 @@ const DatosHeader = ({ expedienteId }) => {
         usuario = {},
         tipoExpediente = {},
         subTipoExpediente = {},
-        estadoExpediente = {},
     } = datos;
 
 

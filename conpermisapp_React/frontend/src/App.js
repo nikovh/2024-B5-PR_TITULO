@@ -33,7 +33,7 @@ function App() {
         {/* provisorias */}
         <Route path="/ph/:id" element={<PruebaHook />} />
         <Route path="/form1/:id" element={<Formulario1 />} />
-        <Route path="/124/:id" element={<SolicitudArt124 />} />
+        <Route path="/124/:expedienteId" element={<SolicitudArt124 />} />
 
 
 

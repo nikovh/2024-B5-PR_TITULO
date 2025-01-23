@@ -7,9 +7,8 @@ import ArquitectoPatrocinante   from "./FormPage/ArquitectoPatrocinante"
 
 import useFetchDatos    from "./hooks/useFetchDatos";
 
-import Formulario1      from "./Formularios/Formulario1";
+
 import CargaOcupacion   from "./Formularios/CargaOcupacion";
-import ExportarForm     from "./Formularios/ExportarForm";
 import DatosPropietario from "./FormPage/DatosPropietario";
 import SolicitudArt124 from "./Formularios/SolicitudArt124";
 
@@ -116,7 +115,7 @@ const ExpedienteDetalle = () => {
                 <CargaOcupacion />
             </Desplegable>
             <Desplegable title="Formulario 4: Solicitud Art. 124° LGUC ">
-                <SolicitudArt124 />
+                <SolicitudArt124 expedienteId={id} />
             </Desplegable>
 
 

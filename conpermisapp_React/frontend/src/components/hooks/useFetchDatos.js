@@ -12,7 +12,7 @@ const useFetchDatos = (expedienteId) => {
     });
     const [error, setError] = useState(null);
     
-
+    console.log("Intentando obtener datos para expedienteId:", expedienteId);
     useEffect(() => {
         if (!expedienteId) return;
         
