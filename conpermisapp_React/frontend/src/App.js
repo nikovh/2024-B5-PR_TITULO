@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './components/Login';
 import Registro from './components/Registro';
@@ -7,8 +7,9 @@ import AccesoProtegido from './components/AccesoProtegido';
 import ExpedienteDetalle from "./components/ExpedienteDetalle";
 import ExpedienteManager from "./components/ExpedienteManager";
 import ExpedienteFormPage from "./components/ExpedienteFormPage";
-import PruebaHook from "./components/hooks/PruebaHook";
+import Administracion from "./components/Administracion";
 
+import PruebaHook from "./components/hooks/PruebaHook";
 
 import Formulario1 from "./components/Formularios/Formulario1";
 import SolicitudArt124 from "./components/Formularios/SolicitudArt124";
@@ -16,24 +17,31 @@ import SolicitudArt124 from "./components/Formularios/SolicitudArt124";
 
 
 
+
 function App() {
+  const [usuario, setUsuario] = useState(null); 
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/dashboard" element={ <AccesoProtegido> <Dashboard /> </AccesoProtegido> }/>
-        <Route path="/registro" element={<Registro />} />
-        <Route path="/expediente-form" element={<ExpedienteFormPage />} />
-        <Route path="/expedientes" element={<ExpedienteManager />} />
+        <Route path="/"                   element={<Login setUsuario={setUsuario} />} />
+        <Route path="/dashboard"          element={ <AccesoProtegido usuario={usuario}> <Dashboard />      </AccesoProtegido> }/>
+        <Route path="/administracion"     element={ <AccesoProtegido usuario={usuario}> <Administracion /> </AccesoProtegido> }/>
+
+        <Route path="/registro"           element={<Registro />} />
+        <Route path="/expediente-form"    element={<ExpedienteFormPage />} />
+        <Route path="/expedientes"        element={<ExpedienteManager />} />
+
+
         {/* rutas con parametros */}
         <Route path="/expedientes/:email" element={<ExpedienteManager />} />
-        <Route path="/detalle/:id" element={<ExpedienteDetalle />} />
-        
+        <Route path="/detalle/:id"        element={<ExpedienteDetalle />} />
+
 
         {/* provisorias */}
-        <Route path="/ph/:id" element={<PruebaHook />} />
-        <Route path="/form1/:id" element={<Formulario1 />} />
-        <Route path="/124/:expedienteId" element={<SolicitudArt124 />} />
+        <Route path="/ph/:id"             element={<PruebaHook />} />
+        <Route path="/form1/:id"          element={<Formulario1 />} />
+        <Route path="/124/:expedienteId"  element={<SolicitudArt124 />} />
 
 
 

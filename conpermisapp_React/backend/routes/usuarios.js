@@ -134,4 +134,75 @@ router.get('/email/:email', async (req, res) => {
 });
 
 
+// PUT actualizar un usuario por rut
+router.put('/:rut', async (req, res) => {
+    const { rut } = req.params;
+    const { 
+        nombres, 
+        apellidos, 
+        telefono, 
+        email, 
+        password, 
+        rol, 
+        patenteProfesional 
+    } = req.body;
+
+    try {
+        const pool = await getConnection();
+        const result = await pool.request()
+            .input("rut", sql.VarChar, rut)
+            .input("nombres", sql.VarChar, nombres)
+            .input("apellidos", sql.VarChar, apellidos)
+            .input("telefono", sql.Int, telefono)
+            .input("email", sql.VarChar, email)
+            .input("password", sql.VarChar, password)
+            .input("rol", sql.VarChar, rol)
+            .input("patenteProfesional", sql.VarChar, patenteProfesional || null)
+            .query(`
+                UPDATE Usuario
+                SET 
+                    nombres = @nombres,
+                    apellidos = @apellidos,
+                    telefono = @telefono,
+                    email = @email,
+                    password = @password,
+                    rol = @rol,
+                    patenteProfesional = @patenteProfesional
+                WHERE rut = @rut
+            `);
+
+        if (result.rowsAffected[0] === 0) {
+            return res.status(404).json({ error: "Usuario no encontrado." });
+        }
+
+        res.status(200).json({ message: "Usuario actualizado exitosamente." });
+    } catch (err) {
+        console.error("Error al actualizar usuario:", err);
+        res.status(500).json({ error: "Error al actualizar usuario." });
+    }
+});
+
+
+// DELETE eliminar un usuario por rut
+router.delete('/:rut', async (req, res) => {
+    const { rut } = req.params;
+
+    try {
+        const pool = await getConnection();
+        const result = await pool.request()
+            .input("rut", sql.VarChar, rut)
+            .query('DELETE FROM Usuario WHERE rut = @rut');
+
+        if (result.rowsAffected[0] === 0) {
+            return res.status(404).json({ error: "Usuario no encontrado." });
+        }
+
+        res.status(200).json({ message: "Usuario eliminado exitosamente." });
+    } catch (err) {
+        console.error("Error al eliminar usuario:", err);
+        res.status(500).json({ error: "Error al eliminar usuario." });
+    }
+});
+
+
 module.exports = router;
