@@ -89,7 +89,8 @@ router.get('/expedientes/:expedienteId', async (req, res) => {
             return res.status(404).json({ error: 'No se encontraron propiedades para este expediente' });
         }
 
-        res.status(200).json(result.recordset);
+        // res.status(200).json(result.recordset);
+        res.status(200).json(result.recordset[0]);
     } catch (error) {
         console.error('Error al obtener las propiedades:', error);
         res.status(500).json({ error: 'Error al obtener las propiedades' });
