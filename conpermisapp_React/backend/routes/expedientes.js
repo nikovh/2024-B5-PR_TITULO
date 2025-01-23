@@ -65,8 +65,7 @@ router.get('/', async (req, res) => {
 });
 
 
-
-// GET /expedientes con JOIN - Obtener expedientes con información del propietario
+// GET /expedientes con JOIN - Obtener expedientes todos los expedientes
 router.get('/expedientes', async (req, res) => {
     const usuarioRut = req.query.usuario_rut;
     try {
@@ -122,6 +121,7 @@ router.get('/subtipo-expediente', async (req, res) => {
 });
 
 
+
 // GET expedientes con :id
 router.get('/:id', async (req, res) => {
     const { id } = req.params; // Extraer el ID de los parámetros de la URL
@@ -129,7 +129,7 @@ router.get('/:id', async (req, res) => {
     try {
         const pool = await getConnection();
 
-        // Consulta SQL para obtener un expediente por ID
+        // Consulta SQL para obtener un expediente por ID incluyendo el tipoEstado
         const result = await pool.request()
             .input('id', sql.Int, id) // Usar un parámetro seguro
             .query(`
@@ -139,6 +139,7 @@ router.get('/:id', async (req, res) => {
                     e.tipo,
                     e.subtipo,
                     e.EstadoExpediente_id,
+                    ee.tipoEstado AS estadoNombre, 
                     e.fechaCreacion,
                     e.Usuario_email,
                     p.rut AS propietarioRut,
@@ -146,6 +147,7 @@ router.get('/:id', async (req, res) => {
                     p.apellidos AS propietarioApellidos
                 FROM Expedientes e
                 LEFT JOIN Propietario p ON e.Propietario_rut = p.rut
+                LEFT JOIN EstadoExpediente ee ON e.EstadoExpediente_id = ee.id
                 WHERE e.id = @id
             `);
 

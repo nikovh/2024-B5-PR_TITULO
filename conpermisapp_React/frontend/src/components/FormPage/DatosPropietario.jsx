@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const DatosPropietario = ({ onUpdate }) => {
-  const [propietario, setPropietario] = useState({
+const DatosPropietario = ({ propietario, onSave }) => {
+  const [propData, setPropData] = useState({
     rut: '',
     nombres: '',
     apellidos: '',
@@ -9,114 +9,88 @@ const DatosPropietario = ({ onUpdate }) => {
     telefono: '',
   });
 
-  const [errores, setErrores] = useState({
-    rut: '',
-    nombres: '',
-    email: '',
-    telefono: '',
-  });
+  const [errores, setErrores] = useState({});
+  const [isEditing, setIsEditing] = useState(false); // Modo de edición
 
-  // Validadores
-  const validarRut = (rut) => {
-    const regexRut = /^[0-9]{7,8}-[0-9kK]{1}$/; // Formato básico de RUT
-    return regexRut.test(rut) ? '' : 'El RUT debe ser válido (Ej: 12345678-9).';
-  };
+  useEffect(() => {
+    if (propietario) {
+      setPropData(propietario);
+    }
+  }, [propietario]);
 
-  const validarNombres = (nombres) => {
-    return nombres.trim().length > 0 ? '' : 'El nombre es obligatorio.';
-  };
+  // Validaciones 
+  const validarCampos = (data) => {
+    const nuevosErrores = {};
 
-  const validarEmail = (email) => {
-    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regexEmail.test(email) ? '' : 'El correo electrónico debe ser válido.';
-  };
+    if (!data.rut.match(/^[0-9]{7,8}-[0-9kK]{1}$/)) {
+        nuevosErrores.rut = "El RUT debe ser válido (Ej: 12345678-9).";
+    }
+    if (!data.nombres.trim()) {
+        nuevosErrores.nombres = "El nombre es obligatorio.";
+    }
+    if (!data.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        nuevosErrores.email = "El correo electrónico debe ser válido.";
+    }
+    if (!String(data.telefono).match(/^[0-9]{8,15}$/)) {
+        nuevosErrores.telefono = "El teléfono debe tener entre 8 y 15 dígitos.";
+    }
 
-  const validarTelefono = (telefono) => {
-    const regexTelefono = /^[0-9]{8,15}$/; // Teléfonos con entre 8 y 15 dígitos
-    return regexTelefono.test(telefono) ? '' : 'El teléfono debe tener entre 8 y 15 dígitos.';
-  };
+    return nuevosErrores;
+};
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setPropData((prev) => ({ ...prev, [name]: value }));
 
-    // Actualizar propietario
-    const nuevoPropietario = { ...propietario, [name]: value };
-    setPropietario(nuevoPropietario);
+    // Validación en tiempo real
+    const nuevosErrores = validarCampos({ ...propData, [name]: value });
+    setErrores(nuevosErrores);
+  };
 
-    // Validar campo específico
-    let error = '';
-    if (name === 'rut') error = validarRut(value);
-    if (name === 'nombres') error = validarNombres(value);
-    if (name === 'email') error = validarEmail(value);
-    if (name === 'telefono') error = validarTelefono(value);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Validar todos los campos
+    const nuevosErrores = validarCampos(propData);
+    setErrores(nuevosErrores);
 
-    setErrores({ ...errores, [name]: error });
-
-    // Enviar datos actualizados y validados al padre
-    // const datosValidos = Object.values(errores).every((err) => err === '') && error === '';
-    // onUpdate({ ...nuevoPropietario, datosValidos });
-
-    const datosValidos =
-      Object.values({ ...errores, [name]: error }).every((err) => err === '') &&
-      propietario.rut.trim() &&
-      propietario.nombres.trim() &&
-      propietario.email.trim() &&
-      propietario.telefono.trim();
-    onUpdate({ ...nuevoPropietario, datosValidos });
+    if(Object.keys(nuevosErrores).length === 0) {
+      onSave(propData); // solo guarda si nuevosErorres son 0
+      setIsEditing(false);
+    }
   };
 
   return (
     <div>
-      <form>
+      <form onSubmit={handleSubmit}>
+        {[
+          { label: "RUT", name: "rut" },
+          { label: "Nombres", name: "nombres" },
+          { label: "Apellidos", name: "apellidos" },
+          { label: "Email", name: "email", type: "email" },
+          { label: "Teléfono", name: "telefono", type: "number" },
+        ].map(({ label, name, type = "text" }) => (
+          <div key={name} style={{ marginBottom: "10px" }}>
+            <label>{label}:</label>
+            <input
+              type={type}
+              name={name}
+              value={propietario[name] || ""}
+              onChange={handleChange}
+              disabled={!isEditing} // Desactiva los campos si no está en modo edición
+            />
+          </div>
+        ))}
         <div>
-          <label>RUT:</label>
-          <input
-            name="rut"
-            value={propietario.rut}
-            onChange={handleChange}
-            maxLength={10}
-          />
-          {errores.rut && <p style={{ color: 'red', fontSize: '12px' }}>{errores.rut}</p>}
-        </div>
-        <div>
-          <label>Nombres:</label>
-          <input
-            name="nombres"
-            value={propietario.nombres}
-            onChange={handleChange}
-            maxLength={50}
-          />
-          {errores.nombres && <p style={{ color: 'red', fontSize: '12px' }}>{errores.nombres}</p>}
-        </div>
-        <div>
-          <label>Apellidos:</label>
-          <input
-            name="apellidos"
-            value={propietario.apellidos}
-            onChange={handleChange}
-            maxLength={25}
-          />
-        </div>
-        <div>
-          <label>Email:</label>
-          <input
-            name="email"
-            type="email"
-            value={propietario.email}
-            onChange={handleChange}
-            maxLength={50}
-          />
-          {errores.email && <p style={{ color: 'red', fontSize: '12px' }}>{errores.email}</p>}
-        </div>
-        <div>
-          <label>Teléfono:</label>
-          <input
-            name="telefono"
-            type="number"
-            value={propietario.telefono}
-            onChange={handleChange}
-          />
-          {errores.telefono && <p style={{ color: 'red', fontSize: '12px' }}>{errores.telefono}</p>}
+          {!isEditing ? (
+            <button type="button" onClick={() => setIsEditing(true)} style={{ marginRight: "10px" }}>
+              Editar
+            </button>
+          ) : (
+            <>
+              <button type="submit" style={{ marginRight: "10px" }}>Guardar</button>
+              <button type="button" onClick={() => setIsEditing(false)}>Cancelar</button>
+            </>
+          )}
         </div>
       </form>
     </div>
