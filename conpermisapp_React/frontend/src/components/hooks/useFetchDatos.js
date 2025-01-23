@@ -11,6 +11,7 @@ const useFetchDatos = (expedienteId) => {
         estadoExpediente: null,
     });
     const [error, setError] = useState(null);
+    
 
     useEffect(() => {
         if (!expedienteId) return;
@@ -28,26 +29,27 @@ const useFetchDatos = (expedienteId) => {
                 setDatos((prev) => ({ ...prev, expediente }));
 
                 // Obtener propiedad
-                if (expediente.id) { 
+                if (expedienteId) {
                     console.log("Intentando obtener la propiedad...");
-                    const propiedadResponse = await fetch(`http://localhost:4000/propiedades/expedientes/${expediente.id}`);
+                    const propiedadResponse = await fetch(`http://localhost:4000/propiedades/expedientes/${expedienteId}`);
                     if (!propiedadResponse.ok) throw new Error("Error al obtener la propiedad");
                     const propiedad = await propiedadResponse.json();
                     console.log("Propiedad obtenida:", propiedad);
-                    setDatos((prev) => ({ ...prev, propiedad: propiedad[0] })); 
+                    setDatos((prev) => ({ ...prev, propiedad }));
                 } else {
-                    console.warn("No se encontró un id para obtener la propiedad.");
+                    console.warn("No se encontró un expedienteId para obtener la propiedad.");
                 }
 
                 // Obtener propietario
-                if (expediente.Propietario_rut) {
+                if (expediente.propietarioRut) {
                     console.log("Intentando obtener el propietario...");
-                    const propietarioResponse = await fetch(`http://localhost:4000/propietarios/${expediente.Propietario_rut}`);
+                    const propietarioResponse = await fetch(`http://localhost:4000/propietarios/${expediente.propietarioRut}`);
                     if (!propietarioResponse.ok) throw new Error("Error al obtener el propietario");
                     const propietario = await propietarioResponse.json();
+                    console.log("Propietario obtenido:", propietario);
                     setDatos((prev) => ({ ...prev, propietario }));
                 } else {
-                    console.warn("No se encontró un Propietario_rut para obtener el propietario.");
+                    console.warn("No se encontró un propietarioRut para obtener el propietario.");
                 }
 
                 // Obtener usuario

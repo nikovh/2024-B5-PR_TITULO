@@ -51,7 +51,7 @@ import PruebaHook from "./components/hooks/PruebaHook"; // Ajusta la ruta según
 const App = () => {
     return (
         <div>
-            <PruebaHook expedienteId={1074} />
+            <PruebaHook expedienteId="1074" />
         </div>
     );
 };
