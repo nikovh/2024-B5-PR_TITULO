@@ -234,9 +234,7 @@
 import React, { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import Desplegable from "./FormPage/Desplegable";
-import DatosPropietario from "./FormPage/DatosPropietario";
-import DatosPropiedad from "./FormPage/DatosPropiedad";
-import { auth } from "../firebase";
+import DatosPropietario from './FormPage/DatosPropietario';
 import "../styles/FormPage.css";
 
 function ExpedienteFormPage() {

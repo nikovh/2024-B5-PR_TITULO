@@ -91,21 +91,30 @@ router.get('/subtipo-expediente', async (req, res) => {
 
 // GET expedientes con :id
 router.get('/:id', async (req, res) => {
-    const { id } = req.params; // Extraer el ID de los parámetros de la URL
+    const { id } = req.params;
 
     try {
         const pool = await getConnection();
 
+<<<<<<< Updated upstream
         // Consulta SQL para obtener un expediente por ID
+=======
+        // Consulta SQL corregida
+>>>>>>> Stashed changes
         const result = await pool.request()
-            .input('id', sql.Int, id) // Usar un parámetro seguro
+            .input('id', sql.Int, id)
             .query(`
                 SELECT 
                     e.id AS expedienteId,
                     e.descripcion,
                     e.tipo,
                     e.subtipo,
+<<<<<<< Updated upstream
                     e.estadoExpedienteId,
+=======
+                    e.EstadoExpediente_id,
+                    ee.tipoEstado AS estadoNombre,
+>>>>>>> Stashed changes
                     e.fechaCreacion,
                     p.rut AS propietarioRut,
                     p.nombres AS propietarioNombres,
@@ -122,12 +131,10 @@ router.get('/:id', async (req, res) => {
 
             `);
 
-        // Si no se encuentra el expediente, retornar un error 404
         if (result.recordset.length === 0) {
             return res.status(404).json({ error: 'Expediente no encontrado' });
         }
 
-        // Retornar el expediente encontrado
         res.status(200).json(result.recordset[0]);
     } catch (error) {
         console.error('Error al obtener el expediente:', error);
@@ -136,7 +143,13 @@ router.get('/:id', async (req, res) => {
 });
 
 
+<<<<<<< Updated upstream
 
+=======
+// POST descripcion y usuario, propietario
+router.post('/', async (req, res) => {
+    const { descripcion, usuarioEmail, tipo, subtipo, propietario, esNuevoPropietario } = req.body;
+>>>>>>> Stashed changes
 
 /*
 //  POST crear un nuevo expediente
@@ -203,6 +216,7 @@ router.post('/', async (req, res) => {
         const pool = await getConnection();
         console.log("Conexión con la base de datos establecida.");
 
+<<<<<<< Updated upstream
         // Verificar propietario
         const propietarioCheck = await pool.request()
             .input("rut", sql.VarChar, propietario.rut)
@@ -220,6 +234,28 @@ router.post('/', async (req, res) => {
                     INSERT INTO Propietario (rut, nombres, apellidos, email, telefono)
                     VALUES (@rut, @nombres, @apellidos, @email, @telefono)
                 `);
+=======
+        if (esNuevoPropietario) {
+            // Verificar propietario
+            const propietarioCheck = await pool.request()
+                .input("rut", sql.VarChar, propietario.rut)
+                .query("SELECT rut FROM Propietario WHERE rut = @rut");
+
+            if (propietarioCheck.recordset.length === 0) {
+                //crear propietario
+                await pool.request()
+                    .input("rut", sql.VarChar, propietario.rut)
+                    .input("nombres", sql.VarChar, propietario.nombres)
+                    .input("apellidos", sql.VarChar, propietario.apellidos)
+                    .input("email", sql.VarChar, propietario.email)
+                    .input("telefono", sql.VarChar, propietario.telefono)
+                    .query(`
+                        INSERT INTO Propietario (rut, nombres, apellidos, email, telefono)
+                        VALUES (@rut, @nombres, @apellidos, @email, @telefono)
+                    `);
+                console.log("Nuevo propietario creado:", propietario);
+            }
+>>>>>>> Stashed changes
         }
 
         // Insertar propiedad
@@ -261,7 +297,11 @@ router.post('/', async (req, res) => {
 
         res.status(201).json({
             message: "Expediente creado exitosamente.",
+<<<<<<< Updated upstream
             expedienteId,
+=======
+            id: expedienteId,
+>>>>>>> Stashed changes
         });
     } catch (err) {
         console.error("Error al crear el expediente:", err);
