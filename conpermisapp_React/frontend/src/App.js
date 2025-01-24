@@ -9,7 +9,7 @@ import ExpedienteManager from "./components/ExpedienteManager";
 import ExpedienteFormPage from "./components/ExpedienteFormPage";
 import Administracion from "./components/Administracion";
 
-import PruebaHook from "./components/hooks/PruebaHook";
+
 
 import Formulario1 from "./components/Formularios/Formulario1";
 import SolicitudArt124 from "./components/Formularios/SolicitudArt124";
@@ -36,7 +36,7 @@ function App() {
 
 
         {/* provisorias */}
-        <Route path="/ph/:id"             element={<PruebaHook />} />
+
         <Route path="/form1/:id"          element={<Formulario1 />} />
         <Route path="/124/:expedienteId"  element={<SolicitudArt124 />} />
 

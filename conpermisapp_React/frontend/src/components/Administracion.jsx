@@ -28,7 +28,7 @@ const Administracion = () => {
             return;
         }
         try {
-            const response = await fetch(`http://localhost:4000/expedientes?usuario_email=${email}`);
+            const response = await fetch("http://localhost:4000/expedientes/expedientes");
             if (!response.ok) {
                 throw new Error("Error al cargar los expedientes");
             }
