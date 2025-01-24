@@ -1,4 +1,4 @@
-import axios from 'axios';
+
 import { auth } from '../firebase';
 
 const API_URL = 'http://localhost:4000';
@@ -13,7 +13,7 @@ export async function getExpedientesProtegidos() {
     const token = await user.getIdToken();
 
     //hacer la peticion al backend
-    const response = await axios.get(`${API_URL}/expedientes-protegidos`, {
+    const response = await fetch(`${API_URL}/expedientes-protegidos`, {
         headers: {
             Authorization: `Bearer ${token}`
         }

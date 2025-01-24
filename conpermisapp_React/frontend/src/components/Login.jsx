@@ -2,7 +2,6 @@
 // import { useNavigate } from "react-router-dom";
 // import { auth } from "../firebase";
 // import { signInWithEmailAndPassword } from "firebase/auth";
-// import axios from "axios";
 // import '../styles/Login.css';
 
 
@@ -11,7 +10,7 @@
 //     const [password, setPassword] = useState('');
 //     const [error, setError] = useState('');
 //     const navigate = useNavigate();
-    
+
 //     const handleLogin = async (e) => {
 //         e.preventDefault();
 
@@ -62,64 +61,98 @@
 
 // export default Login;
 
+
+//op
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { auth } from "../firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import '../styles/Login.css';
 
-const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
+function Login() {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null); // Limpia errores anteriores
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        console.log("Datos enviados:", { email, password });
+        try {
+            // Autenticación con Firebase
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
 
-    try {
-      // Enviar credenciales al backend
-      const response = await axios.post("http://localhost:4000/auth/login", { email, password });
-      const { rol } = response.data;
+            // Obtener el token de Firebase
+            const token = await user.getIdToken();
 
-      // Validar el rol del usuario y redirigir
-      if (rol === "administrador") {
-        navigate("/administracion"); // Redirige a Administracion.jsx
-      } else {
-        navigate("/dashboard"); // Redirige a Dashboard.jsx
-      }
-    } catch (err) {
-      console.error("Error en el inicio de sesión:", err);
-      setError("Credenciales incorrectas o error en el servidor.");
-    }
-  };
+            // Enviar el token al backend para verificar el rol
+            const response = await fetch("http://localhost:4000/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ email }),
+            });
 
-  return (
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <h1>Iniciar Sesión</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Email:</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+            if (!response.ok) {
+                throw new Error("Error en el servidor o credenciales incorrectas.");
+            }
+
+            const data = await response.json();
+            console.log("Respuesta del backend:", data);
+
+            // Guardar datos en el localStorage
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("rol", data.rol);
+            localStorage.setItem("email", email);
+
+            // Redirigir según el rol
+            if (data.rol === "admin") {
+                navigate("/administracion");
+            } else {
+                navigate("/dashboard");
+            }
+        } catch (err) {
+            setError("Correo electrónico o contraseña incorrectos.");
+            console.error("Error en el inicio de sesión:", err.message);
+        }
+    };
+
+    return (
+        <div className="login-background">
+            <div className="background-text">conPermisApp</div>
+            <div className="login-box">
+                <h2>Inicia sesión a tu cuenta</h2>
+                <form onSubmit={handleLogin}>
+                    <div className="form-group">
+                        <label htmlFor="email">Correo electrónico</label>
+                        <input
+                            type="email"
+                            id="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="password">Contraseña</label>
+                        <input
+                            type="password"
+                            id="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+                    {error && <p className="error">{error}</p>}
+                    <button type="submit" className="login-button">Iniciar sesión</button>
+                </form>
+                <p>¿No tienes cuenta? No hay problema, <a href="/registro">Regístrate aquí</a>.</p>
+            </div>
         </div>
-        <div>
-          <label>Contraseña:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        <button type="submit">Iniciar Sesión</button>
-      </form>
-    </div>
-  );
-};
+    );
+}
 
 export default Login;

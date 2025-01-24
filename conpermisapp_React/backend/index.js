@@ -1,24 +1,24 @@
 require('dotenv').config();
 const express       = require('express');
 const cors          = require('cors');
-
-// importa la instancia de Firebase Admin y el middleware
 const admin         = require('./firebaseAdmin');
 const firebaseAuth  = require('./middlewares/firebaseAuth');
+
 
 const app = express();
 
 // Middlewares globales
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Rutas
 const expedienteRoutes    = require('./routes/expedientes');
 const formularioRoutes    = require('./routes/formularios');
-const usuariosRoutes      = require('./routes/usuarios');
-const propietariosRoutes  = require('./routes/propietarios');
 const propiedadesRoutes   = require('./routes/propiedades')
-
+const propietariosRoutes  = require('./routes/propietarios');
+const usuariosRoutes      = require('./routes/usuarios');
+const authRoutes          = require("./routes/auth")
 
 // Usa las rutas en el servidor
 // para proteger TODAS las rutas de expedientes y formularios, agrega el middleware firebaseAuth
@@ -27,10 +27,10 @@ const propiedadesRoutes   = require('./routes/propiedades')
 
 app.use('/expedientes', expedienteRoutes);
 app.use('/formularios', formularioRoutes);
-app.use('/usuarios', usuariosRoutes);
-app.use('/propietarios', propietariosRoutes);
 app.use('/propiedades', propiedadesRoutes)
-// app.use('auth', authRoutes)
+app.use('/propietarios', propietariosRoutes);
+app.use('/usuarios', usuariosRoutes);
+app.use('/auth', authRoutes)
 
 
 // Ruta de prueba

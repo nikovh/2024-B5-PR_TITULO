@@ -8,6 +8,7 @@ import Card from "./Card"
 import '../styles/Dashboard.css'
 
 
+
 function Dashboard() {
     const [user] = useAuthState(auth);
     const [nombreUsuario, setNombreUsuario] = useState("Usuario general");

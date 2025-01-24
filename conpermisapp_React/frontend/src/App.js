@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './components/Login';
 import Registro from './components/Registro';
@@ -15,18 +15,15 @@ import Formulario1 from "./components/Formularios/Formulario1";
 import SolicitudArt124 from "./components/Formularios/SolicitudArt124";
 
 
-
-
-
 function App() {
-  const [usuario, setUsuario] = useState(null); 
-
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/"                   element={<Login setUsuario={setUsuario} />} />
-        <Route path="/dashboard"          element={ <AccesoProtegido usuario={usuario}> <Dashboard />      </AccesoProtegido> }/>
-        <Route path="/administracion"     element={ <AccesoProtegido usuario={usuario}> <Administracion /> </AccesoProtegido> }/>
+        <Route path="/"                   element={<Login />} />
+        <Route path="/dashboard"          element={ <AccesoProtegido rolesPermitidos={["usuario"]}> <Dashboard /> </AccesoProtegido> }/>
+        <Route path="/administracion"     element={ <AccesoProtegido rolesPermitidos={["admin"]}> <Administracion /> </AccesoProtegido> }/> 
+        {/* <Route path="/dashboard"          element={ <AccesoProtegido> <Dashboard /> </AccesoProtegido> }/>
+        <Route path="/administracion"     element={ <AccesoProtegido> <Administracion /> </AccesoProtegido> }/> */}
 
         <Route path="/registro"           element={<Registro />} />
         <Route path="/expediente-form"    element={<ExpedienteFormPage />} />
@@ -51,6 +48,8 @@ function App() {
 }
 
 export default App;
+
+
 
 
 // import React from "react";

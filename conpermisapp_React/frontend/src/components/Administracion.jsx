@@ -1,63 +1,85 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 
-const Administracion = () => { 
+const Administracion = () => {
     const [usuarios, setUsuarios] = useState([]);
     const [expedientes, setExpedientes] = useState([]);
     const [error, setError] = useState(null);
 
-    //fetch usuarios
+    // fetch usuarios
     const fetchUsuarios = async () => {
         try {
-            const response = await axios.get("http://localhost:4000/usuarios");
-            setUsuarios(response.data);
+            const response = await fetch("http://localhost:4000/usuarios");
+            if (!response.ok) {
+                throw new Error("Error al cargar los usuarios");
+            }
+            const data = await response.json();
+            setUsuarios(data);
         } catch (err) {
             console.error("Error al obtener usuarios:", err);
             setError("Error al cargar los usuarios.");
         }
     };
 
-    //fetch expedientes
+    // fetch expedientes
     const fetchExpedientes = async () => {
+        const email = localStorage.getItem("email"); // Obtener email del usuario
+        if (!email) {
+            setError("No se encontró el email del usuario.");
+            return;
+        }
         try {
-            const response  = await axios.get("http://localhost:4000/expedientes");
-            setExpedientes(response.data);
+            const response = await fetch(`http://localhost:4000/expedientes?usuario_email=${email}`);
+            if (!response.ok) {
+                throw new Error("Error al cargar los expedientes");
+            }
+            const data = await response.json();
+            setExpedientes(data);
         } catch (err) {
             console.error("Error al obtener expedientes:", err);
-            setError("Error al cargar los expedientes");
+            setError("Error al cargar los expedientes.");
         }
     };
 
-    //eliminar usuario
+    // eliminar usuario
     const eliminarUsuario = async (rut) => {
         try {
-            await axios.delete(`http://localhost:4000/usuarios/${rut}`);
+            const response = await fetch(`http://localhost:4000/usuarios/${rut}`, {
+                method: "DELETE",
+            });
+            if (!response.ok) {
+                throw new Error("Error al eliminar el usuario");
+            }
             alert("Usuario eliminado exitosamente.");
-            fetchUsuarios();
+            fetchUsuarios(); // Recargar lista de usuarios
         } catch (err) {
             console.error("Error al eliminar usuario:", err);
-            setError("Erorr al eliminar el usuario");
+            setError("Error al eliminar el usuario.");
         }
     };
 
-    // elimianr expediente
-    const eliminarExpediente = async () => {
+    // eliminar expediente
+    const eliminarExpediente = async (id) => {
         try {
-            await axios.delete(`http://localhost:4000/expedientes/${id}`);
+            const response = await fetch(`http://localhost:4000/expedientes/${id}`, {
+                method: "DELETE",
+            });
+            if (!response.ok) {
+                throw new Error("Error al eliminar el expediente");
+            }
             alert("Expediente eliminado exitosamente.");
-            fetchExpedientes();
+            fetchExpedientes(); // Recargar lista de expedientes
         } catch (err) {
             console.error("Error al eliminar expediente:", err);
-            setError("Error al eliminar el expediente");
+            setError("Error al eliminar el expediente.");
         }
     };
 
-    //hooks para cargar los datos
+    // hooks para cargar los datos
     useEffect(() => {
         fetchUsuarios();
         fetchExpedientes();
     }, []);
-    
+
     if (error) {
         return <p style={{ color: "red" }}>{error}</p>;
     }

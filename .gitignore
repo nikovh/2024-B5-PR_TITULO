@@ -131,3 +131,4 @@ dist
 backend/config/firebaseServiceAccountKey.json
 
 firebaseServiceAccountKey.json
+conpermisapp_React/backend/config/firebaseServiceKey.json
