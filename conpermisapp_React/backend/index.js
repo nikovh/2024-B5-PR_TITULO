@@ -3,6 +3,7 @@ const express       = require('express');
 const cors          = require('cors');
 const admin         = require('./firebaseAdmin');
 const firebaseAuth  = require('./middlewares/firebaseAuth');
+const router        = express.Router();
 
 
 const app = express();
@@ -10,7 +11,7 @@ const app = express();
 // Middlewares globales
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// app.use(express.urlencoded({ extended: true }));
 
 // Rutas
 const expedienteRoutes    = require('./routes/expedientes');
@@ -26,11 +27,11 @@ const authRoutes          = require("./routes/auth")
 // app.use('/formularios', firebaseAuth, formularioRoutes);
 
 app.use('/expedientes', expedienteRoutes);
-app.use('/formularios', formularioRoutes);
-app.use('/propiedades', propiedadesRoutes)
-app.use('/propietarios', propietariosRoutes);
-app.use('/usuarios', usuariosRoutes);
-app.use('/auth', authRoutes)
+// app.use('/formularios', formularioRoutes);
+// app.use('/propiedades', propiedadesRoutes)
+// app.use('/propietarios', propietariosRoutes);
+// app.use('/usuarios', usuariosRoutes);
+// app.use('/auth', authRoutes)
 
 
 // Ruta de prueba
