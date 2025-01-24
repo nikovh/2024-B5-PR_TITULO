@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
 
 const Administracion = () => {
     const [usuarios, setUsuarios] = useState([]);
     const [expedientes, setExpedientes] = useState([]);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     // fetch usuarios
     const fetchUsuarios = async () => {
@@ -74,6 +78,15 @@ const Administracion = () => {
         }
     };
 
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            navigate("/");
+        } catch (err) {
+            console.error("Error al cerrar sesión:", err);
+        }
+    };
+
     // hooks para cargar los datos
     useEffect(() => {
         fetchUsuarios();
@@ -86,7 +99,12 @@ const Administracion = () => {
 
     return (
         <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-            <h1>Administración</h1>
+            <div className="dashboard-header">
+                <h1>Bienvenido Administrador</h1>
+                <button onClick={handleLogout} className="cerrarButton">
+                    Cerrar Sesión
+                </button>
+            </div>
 
             <h2>Usuarios</h2>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
