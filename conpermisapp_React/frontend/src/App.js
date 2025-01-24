@@ -7,7 +7,7 @@ import AccesoProtegido from './components/AccesoProtegido';
 import ExpedienteDetalle from "./components/ExpedienteDetalle";
 import ExpedienteManager from "./components/ExpedienteManager";
 import ExpedienteFormPage from "./components/ExpedienteFormPage";
-import PruebaHook from "./components/hooks/PruebaHook";
+
 
 
 import Formulario1 from "./components/Formularios/Formulario1";
@@ -31,7 +31,7 @@ function App() {
         
 
         {/* provisorias */}
-        <Route path="/ph/:id" element={<PruebaHook />} />
+
         <Route path="/form1/:id" element={<Formulario1 />} />
         <Route path="/124/:expedienteId" element={<SolicitudArt124 />} />
 

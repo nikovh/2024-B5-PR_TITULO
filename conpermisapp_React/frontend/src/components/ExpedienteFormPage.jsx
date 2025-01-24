@@ -24,7 +24,10 @@ function ExpedienteFormPage() {
     const [propietarioSeleccionado, setPropietarioSeleccionado] = useState("");
     const [esNuevoPropietario, setEsNuevoPropietario] = useState(false);
 
-    // validacion descr
+    const [propiedad, setPropiedad] = useState(null);
+    const [isEditingPropiedad, setIsEditingPropiedad] = useState(false);
+
+    // validacion descripcion
     const validarDescripcion = (desc) => {
         return desc.trim().length > 0 ? "" : "La descripción es necesaria, no olvides completar este campo.";
     };
@@ -42,12 +45,12 @@ function ExpedienteFormPage() {
                 // Fetch tipos
                 const tipoResponse = await fetch(`http://localhost:4000/expedientes/tipo-expediente`);
                 const tipos = await tipoResponse.json();
-                const tipoEncontrado = tipos.find(t => String(t.id) === tipo);
+                const tipoEncontrado = tipos.find(t => String(t.id) === tipoParam);
 
                 // Fetch subtipos
                 const subtipoResponse = await fetch(`http://localhost:4000/expedientes/subtipo-expediente`);
                 const subtipos = await subtipoResponse.json();
-                const subtipoEncontrado = subtipos.find(st => String(st.id) === subtipo);
+                const subtipoEncontrado = subtipos.find(st => String(st.id) === subtipoParam);
 
                 setTipoNombre(tipoEncontrado?.nombre || "Desconocido");
                 setSubtipoNombre(subtipoEncontrado?.nombre || "Desconocido");
