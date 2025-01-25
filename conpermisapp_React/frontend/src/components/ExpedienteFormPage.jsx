@@ -12,7 +12,6 @@ function ExpedienteFormPage() {
     // estados
     const [descripcion, setDescripcion] = useState("");
     const [errores, setErrores] = useState({ descripcion: "" });
-    const [responseMessage, setResponseMessage] = useState("");
     const [tipo, setTipo] = useState("");
     const [subtipo, setSubtipo] = useState("");
     const [tipoNombre, setTipoNombre] = useState("");
@@ -106,86 +105,6 @@ function ExpedienteFormPage() {
     };
 
 
-/*
-    const handleSubmit = async () => {
-        console.log('--- Enviando datos al backend ---');
-        console.log('Descripción:', descripcion);
-        console.log('Propietario:', propietario);
-        console.log('Propiedad:', propiedad);
-
-        const descripcionError = validarDescripcion(descripcion);
-        if (descripcionError) {
-            setErrores({ descripcion: descripcionError });
-            return;
-        }
-
-        if (!propietario 
-            // || !propietario.datosValidos
-        ) {
-            alert("Por favor, complete todos los datos del propietario.");
-            return;
-        }
-
-        if (!propiedad) {
-            alert("Por favor, complete los datos de la propiedad. ");
-            return;
-        }
-
-        try {
-            const datosEnviados = {
-                descripcion,
-                usuarioEmail: auth.currentUser?.email || null,
-                tipo,
-                subtipo,
-                propietario,
-                esNuevoPropietario,
-                propiedad,
-            };
-            console.log("Datos enviados al backend:", datosEnviados);
-
-            const response = await fetch("http://localhost:4000/expedientes", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(datosEnviados),
-            });
-
-    //         if (response.ok) {
-    //             const error = await response.json();
-    //             console.error("Error al crear el expediente:", error);
-    //             setResponseMessage(`Error: ${error.message}`);
-    //             return;
-    //         }
-
-    //         const data = await response.json();
-    //         //verificar el id del expediente
-    //         if(data.id) {
-    //             console.log("Expediente creado con ID:", data.id);
-    //             //redirigir
-    //             alert("Expediente exitosamente creado. Ahora serás redirigido a la pagina de detalle del expediente para que sigas completando los siguiente datos necesarios ")
-    //             navigate(`/detalle/${data.id}`);
-    //         } else {
-    //             console.error("El backend no devolvió un ID válido para el expediente.");
-    //             alert("No se pudo obtener el ID del expediente. Inténtelo nuevamente.");
-    //         }
-
-    //     } catch (err) {
-    //         console.error(err);
-    //         setResponseMessage("Error al conectar con el backend.");
-    //     }
-    // };
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Expediente creado con éxito:', data);
-                alert("Expediente exitosamente creado. Ahora serás redirigido a la pagina de detalle del expediente para que sigas completando los siguiente datos necesarios.");
-                navigate(`/detalle/${data.id}`);
-            } else {
-                alert("Error al crear expediente.");
-            }
-        } catch (err) {
-            console.error("Error al enviar datos:", err);
-        }
-    };
-*/
 
     const handleSubmit = async () => {
         try {
@@ -200,6 +119,7 @@ function ExpedienteFormPage() {
                 subtipo,
                 propietario,
                 propiedad,
+                usuarioEmail: auth.currentUser?.email || null,
             };
 
             const response = await fetch('http://localhost:4000/expedientes', {

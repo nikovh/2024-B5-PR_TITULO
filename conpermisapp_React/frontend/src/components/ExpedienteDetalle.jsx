@@ -15,11 +15,11 @@ import SolicitudArt124 from "./Formularios/SolicitudArt124";
 const ExpedienteDetalle = () => {
     const { id } = useParams(); 
     const { datos, error } = useFetchDatos(id); // Usa el hook para obtener los datos
-
-    const [expediente, setExpediente] = useState(null);
-    const [propiedad, setPropiedad] = useState(null); // Estado para la propiedad
     const navigate = useNavigate();
-    const [isEditing, setIsEditing] = useState(false);
+
+    // const [expediente, setExpediente] = useState(null);
+    // const [propiedad, setPropiedad] = useState(null); // Estado para la propiedad
+    // const [isEditing, setIsEditing] = useState(false);
 
 
     if (error) {
@@ -30,39 +30,40 @@ const ExpedienteDetalle = () => {
         return <p>Cargando datos del expediente...</p>;
     }
 
-    const handleSavePropietario = (propietarioData) => {
-        console.log("Guardando datos del propietario:", propietarioData);
-        // Aquí puedes realizar el fetch para guardar los datos en el backend
-    };
+    // Verifica los datos recibidos
+    console.log("Datos del expediente:", datos.expediente);
+    console.log("Datos de la propiedad:", datos.propiedad);
+    console.log("Datos del arquitecto patrocinante:", datos.usuario);
 
-    const handleSavePropiedad = async (nuevaPropiedad) => {
-        try {
-            const url = propiedad
-                ? `http://localhost:4000/propiedades/${propiedad.id}` // Actualización
-                : `http://localhost:4000/propiedades`; // Creación
+
+    // const handleSavePropiedad = async (nuevaPropiedad) => {
+    //     try {
+    //         const url = propiedad
+    //             ? `http://localhost:4000/propiedades/${propiedad.id}` // Actualización
+    //             : `http://localhost:4000/propiedades`; // Creación
     
-            console.log("URL para guardar propiedad:", url);
+    //         console.log("URL para guardar propiedad:", url);
     
-            const response = await fetch(url, {
-                method: propiedad ? "PUT" : "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...nuevaPropiedad, expedienteId: expediente.expedienteId }),
-            });
+    //         const response = await fetch(url, {
+    //             method: propiedad ? "PUT" : "POST",
+    //             headers: { "Content-Type": "application/json" },
+    //             body: JSON.stringify({ ...nuevaPropiedad, expedienteId: expediente.expedienteId }),
+    //         });
     
-            if (response.ok) {
-                const data = await response.json();
-                setPropiedad(data); // Asegúrate de que aquí se actualiza correctamente el estado
-                setIsEditing(false);
-                alert(propiedad ? "Propiedad actualizada exitosamente" : "Propiedad creada exitosamente");
-            } else {
-                const errorData = await response.json();
-                console.error("Error en el servidor:", errorData);
-                alert("Error al guardar la propiedad");
-            }
-        } catch (err) {
-            console.error("Error al guardar la propiedad:", err);
-        }
-    };
+    //         if (response.ok) {
+    //             const data = await response.json();
+    //             setPropiedad(data); 
+    //             setIsEditing(false);
+    //             alert(propiedad ? "Propiedad actualizada exitosamente" : "Propiedad creada exitosamente");
+    //         } else {
+    //             const errorData = await response.json();
+    //             console.error("Error en el servidor:", errorData);
+    //             alert("Error al guardar la propiedad");
+    //         }
+    //     } catch (err) {
+    //         console.error("Error al guardar la propiedad:", err);
+    //     }
+    // };
 
     const handleCancel = () => {
         navigate("/dashboard");
@@ -78,30 +79,44 @@ const ExpedienteDetalle = () => {
             <p><strong>Propietario:</strong> {datos.expediente.propietarioNombres} {datos.expediente.propietarioApellidos}</p>
 
 
+            {/* Desplegable de Datos de la Propiedad */}
             <Desplegable title="Datos de la Propiedad">
-                {/* <DatosPropiedad propiedad={datos.propiedad} onSave={handleSavePropiedad} onCancel={() => setIsEditing(false)} /> */}
-                <DatosPropiedad
-                    propiedad={datos.propiedad} // Pasa la propiedad desde el hook
-                    onSave={(nuevaPropiedad) => {
-                        console.log("Propiedad actualizada:", nuevaPropiedad);
-                        // Aquí puedes actualizar la base de datos o el estado global
-                    }}
-                />
+                {datos.propiedad ? (
+                    <DatosPropiedad
+                        propiedad={datos.propiedad}
+                        onSave={(nuevaPropiedad) => {
+                            console.log("Propiedad actualizada:", nuevaPropiedad);
+                        }}
+                    />
+                ) : (
+                    <p>No se encontraron datos de la propiedad.</p>
+                )}
             </Desplegable>
+
 
             <Desplegable title="Datos del Propietario">
-                <DatosPropietario propietario={datos.propietario} onSave={handleSavePropietario} />
-
-            </Desplegable>
-
-            <Desplegable title="Datos del Arquitecto Patrocinante">
-                <ArquitectoPatrocinante
-                    usuario={datos.usuario} // 
-                    onUpdate={(updatedData) => {
-                        console.log("Datos actualizados del Arquitecto Patrocinante:", updatedData);
-                    }}
+                <DatosPropietario 
+                    propietario={datos.propietario} 
+                    // onSave={handleSavePropietario} 
                 />
+
             </Desplegable>
+
+
+            {/* Desplegable del Arquitecto Patrocinante */}
+            <Desplegable title="Datos del Arquitecto Patrocinante">
+                {datos.usuario ? (
+                    <ArquitectoPatrocinante
+                        usuario={datos.usuario}
+                        onUpdate={(updatedData) => {
+                            console.log("Datos del arquitecto actualizados:", updatedData);
+                        }}
+                    />
+                ) : (
+                    <p>No se encontraron datos del arquitecto patrocinante.</p>
+                )}
+            </Desplegable>
+
 
 
             <Desplegable title="Formulario 1: Información adicional">

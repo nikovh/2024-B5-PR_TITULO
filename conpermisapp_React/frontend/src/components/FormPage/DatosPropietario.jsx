@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const DatosPropietario = ({ propietario, onSave }) => {
+const DatosPropietario = ({ propietario = {}, onSave }) => {
   const [propData, setPropData] = useState({
     rut: '',
     nombres: '',
@@ -12,31 +12,43 @@ const DatosPropietario = ({ propietario, onSave }) => {
   const [errores, setErrores] = useState({});
   const [isEditing, setIsEditing] = useState(false); // Modo de edición
 
+  // useEffect(() => {
+  //   if (propietario) {
+  //     setPropData(propietario);
+  //   }
+  // }, [propietario]);
+
   useEffect(() => {
     if (propietario) {
-      setPropData(propietario);
+      setPropData({
+        rut: propietario.rut || '',
+        nombres: propietario.nombres || '',
+        apellidos: propietario.apellidos || '',
+        email: propietario.email || '',
+        telefono: propietario.telefono || '',
+      });
     }
   }, [propietario]);
 
-  // Validaciones 
+  // Validaciones
   const validarCampos = (data) => {
     const nuevosErrores = {};
 
     if (!data.rut.match(/^[0-9]{7,8}-[0-9kK]{1}$/)) {
-        nuevosErrores.rut = "El RUT debe ser válido (Ej: 12345678-9).";
+      nuevosErrores.rut = "El RUT debe ser válido (Ej: 12345678-9).";
     }
     if (!data.nombres.trim()) {
-        nuevosErrores.nombres = "El nombre es obligatorio.";
+      nuevosErrores.nombres = "El nombre es obligatorio.";
     }
     if (!data.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-        nuevosErrores.email = "El correo electrónico debe ser válido.";
+      nuevosErrores.email = "El correo electrónico debe ser válido.";
     }
     if (!String(data.telefono).match(/^[0-9]{8,15}$/)) {
-        nuevosErrores.telefono = "El teléfono debe tener entre 8 y 15 dígitos.";
+      nuevosErrores.telefono = "El teléfono debe tener entre 8 y 15 dígitos.";
     }
 
     return nuevosErrores;
-};
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -53,11 +65,16 @@ const DatosPropietario = ({ propietario, onSave }) => {
     const nuevosErrores = validarCampos(propData);
     setErrores(nuevosErrores);
 
-    if(Object.keys(nuevosErrores).length === 0) {
+    if (Object.keys(nuevosErrores).length === 0) {
       onSave(propData); // solo guarda si nuevosErorres son 0
       setIsEditing(false);
     }
   };
+
+  if (!propietario) {
+    return <p>Cargando datos del propietario...</p>;
+  }
+
 
   return (
     <div>
@@ -74,7 +91,8 @@ const DatosPropietario = ({ propietario, onSave }) => {
             <input
               type={type}
               name={name}
-              value={propietario[name] || ""}
+              // value={propietario[name]}
+              value={propData[name]}
               onChange={handleChange}
               disabled={!isEditing} // Desactiva los campos si no está en modo edición
             />

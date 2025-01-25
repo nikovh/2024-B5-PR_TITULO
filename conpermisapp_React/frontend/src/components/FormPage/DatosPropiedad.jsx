@@ -17,10 +17,22 @@ const DatosPropiedad = ({ propiedad, onSave }) => {
 
     const [isEditing, setIsEditing] = useState(false);
 
-    // Actualizar datos cuando cambien las propiedades pasadas
+    // datos iniciales
     useEffect(() => {
         if (propiedad) {
-            setFormData(propiedad);
+            setFormData({
+                rolSII: propiedad.rolSII || '',
+                direccion: propiedad.direccion || '',
+                numero: propiedad.numero || '',
+                comuna: propiedad.comuna || '',
+                region: propiedad.region || '',
+                inscFojas: propiedad.inscFojas || '',
+                inscNumero: propiedad.inscNumero || '',
+                inscYear: propiedad.inscYear || '',
+                numPisos: propiedad.numPisos || '',
+                m2: propiedad.m2 || '',
+                destino: propiedad.destino || '',
+            });
         }
     }, [propiedad]);
 

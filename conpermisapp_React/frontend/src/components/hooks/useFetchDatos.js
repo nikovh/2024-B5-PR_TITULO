@@ -40,29 +40,24 @@ const useFetchDatos = (expedienteId) => {
                 //     console.warn("No se encontró un expedienteId para obtener la propiedad.");
                 // }
 
-                // Obtener propiedad op2
-                let propiedad = null;
-                try {
-                    const propiedadResponse = await fetch(`http://localhost:4000/propiedades/expedientes/${expedienteId}`);
-                    if (propiedadResponse.ok) {
-                        propiedad = await propiedadResponse.json();
-                    }
-                } catch (err) {
-                    console.warn("No se encontró una propiedad asociada al expediente:", err.message);
+                // Obtener propiedad
+                const propiedadResponse = await fetch(`http://localhost:4000/propiedades/expedientes/${expedienteId}`);
+                if (propiedadResponse.ok) {
+                    const propiedad = await propiedadResponse.json();
+                    setDatos((prev) => ({ ...prev, propiedad }));
                 }
-
 
                 // Obtener propietario
                 if (expediente.propietarioRut) {
                     console.log("Intentando obtener el propietario...");
                     const propietarioResponse = await fetch(`http://localhost:4000/propietarios/${expediente.propietarioRut}`);
-                    if (!propietarioResponse.ok) throw new Error("Error al obtener el propietario");
-                    const propietario = await propietarioResponse.json();
-                    console.log("Propietario obtenido:", propietario);
-                    setDatos((prev) => ({ ...prev, propietario }));
-                } else {
-                    console.warn("No se encontró un propietarioRut para obtener el propietario.");
-                }
+                    if (!propietarioResponse.ok) {
+                        const propietario = await propietarioResponse.json();
+                        console.log("Propietario obtenido:", propietario);
+                        setDatos((prev) => ({ ...prev, propietario }));
+                    } 
+                } 
+
 
                 // Obtener usuario
                 if (expediente.Usuario_email) {
@@ -102,7 +97,7 @@ const useFetchDatos = (expedienteId) => {
                 }
 
             } catch (err) {
-                console.error("Error en el fetch:", err.message);
+                console.error("Error en el fetch:", err);
                 setError(err.message);
             }
         };
