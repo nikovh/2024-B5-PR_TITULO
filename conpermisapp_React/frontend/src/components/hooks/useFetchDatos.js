@@ -29,16 +29,28 @@ const useFetchDatos = (expedienteId) => {
                 setDatos((prev) => ({ ...prev, expediente }));
 
                 // Obtener propiedad
-                if (expedienteId) {
-                    console.log("Intentando obtener la propiedad...");
+                // if (expedienteId) {
+                //     console.log("Intentando obtener la propiedad...");
+                //     const propiedadResponse = await fetch(`http://localhost:4000/propiedades/expedientes/${expedienteId}`);
+                //     if (!propiedadResponse.ok) throw new Error("Error al obtener la propiedad");
+                //     const propiedad = await propiedadResponse.json();
+                //     console.log("Propiedad obtenida:", propiedad);
+                //     setDatos((prev) => ({ ...prev, propiedad }));
+                // } else {
+                //     console.warn("No se encontró un expedienteId para obtener la propiedad.");
+                // }
+
+                // Obtener propiedad op2
+                let propiedad = null;
+                try {
                     const propiedadResponse = await fetch(`http://localhost:4000/propiedades/expedientes/${expedienteId}`);
-                    if (!propiedadResponse.ok) throw new Error("Error al obtener la propiedad");
-                    const propiedad = await propiedadResponse.json();
-                    console.log("Propiedad obtenida:", propiedad);
-                    setDatos((prev) => ({ ...prev, propiedad }));
-                } else {
-                    console.warn("No se encontró un expedienteId para obtener la propiedad.");
+                    if (propiedadResponse.ok) {
+                        propiedad = await propiedadResponse.json();
+                    }
+                } catch (err) {
+                    console.warn("No se encontró una propiedad asociada al expediente:", err.message);
                 }
+
 
                 // Obtener propietario
                 if (expediente.propietarioRut) {
@@ -84,14 +96,6 @@ const useFetchDatos = (expedienteId) => {
                     setDatos((prev) => ({ ...prev, subTipoExpediente: subTipoEncontrado || null }));
                 }
 
-                // Obtener estado del expediente
-                // if (expediente.EstadoExpediente_id) {
-                //     console.log("Intentando obtener el estado del expediente...");
-                //     const estadoExpedienteResponse = await fetch(`http://localhost:4000/estadoExpedientes/${expediente.EstadoExpediente_id}`);
-                //     if (!estadoExpedienteResponse.ok) throw new Error("Error al obtener el estado del expediente");
-                //     const estadoExpediente = await estadoExpedienteResponse.json();
-                //     setDatos((prev) => ({ ...prev, estadoExpediente }));
-                // }
                 if (expediente.estadoNombre) {
                     console.log("Estado del expediente:", expediente.estadoNombre);
                     setDatos((prev) => ({ ...prev, estadoExpediente: expediente.estadoNombre }));

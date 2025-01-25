@@ -72,7 +72,7 @@ function ExpedienteFormPage() {
 
         fetchNombres();
         fetchPropietarios();
-    }, [searchParams, tipo, subtipo]);
+    }, [searchParams]);
 
     // manejar la seleccion de propietario
     const handlePropietarioSeleccionado = (rut) => {
@@ -80,13 +80,22 @@ function ExpedienteFormPage() {
 
         if (rut === "nuevo") {
             setEsNuevoPropietario(true);
-            setPropietario({ rut: "", nombres: "", apellidos: "", email: "", telefono: "", datosValidos: false, });
+            setPropietario({ 
+                rut: "", 
+                nombres: "", 
+                apellidos: "", 
+                email: "", 
+                telefono: "", 
+                // datosValidos: false, 
+            });
         } else {
             setEsNuevoPropietario(false);
 
             const propietarioExistente = propietariosList.find((p) => p.rut === rut);
             if (propietarioExistente) {
-                setPropietario({ ...propietarioExistente, datosValidos: true });
+                setPropietario({ ...propietarioExistente
+                    //, datosValidos: true 
+                });
                 console.log("Propietario seleccionado", propietarioExistente);
             }
         }
@@ -97,6 +106,10 @@ function ExpedienteFormPage() {
     };
 
     const handleSubmit = async () => {
+        console.log('--- Enviando datos al backend ---');
+        console.log('Descripción:', descripcion);
+        console.log('Propietario:', propietario);
+        console.log('Propiedad:', propiedad);
 
         const descripcionError = validarDescripcion(descripcion);
         if (descripcionError) {
@@ -104,8 +117,15 @@ function ExpedienteFormPage() {
             return;
         }
 
-        if (!propietario || !propietario.datosValidos) {
+        if (!propietario 
+            // || !propietario.datosValidos
+        ) {
             alert("Por favor, complete todos los datos del propietario.");
+            return;
+        }
+
+        if (!propiedad) {
+            alert("Por favor, complete los datos de la propiedad. ");
             return;
         }
 
@@ -117,49 +137,50 @@ function ExpedienteFormPage() {
                 subtipo,
                 propietario,
                 esNuevoPropietario,
+                propiedad,
             };
             console.log("Datos enviados al backend:", datosEnviados);
 
             const response = await fetch("http://localhost:4000/expedientes", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(datosEnviados),
             });
 
-            // if (response.ok) {
-            //     const data = await response.json();
-            //     setResponseMessage(`Expediente creado: ${data.message}`);
-            //     alert("Expediente creado exitosamente!");
-            //     navigate(`/expedientes/${data.id}`);
-            // } else {
-            //     const error = await response.json();
-            //     setResponseMessage(`Error: ${error.message}`);
-            // }
+    //         if (response.ok) {
+    //             const error = await response.json();
+    //             console.error("Error al crear el expediente:", error);
+    //             setResponseMessage(`Error: ${error.message}`);
+    //             return;
+    //         }
 
-            if (!response.ok) {
-                const error = await response.json();
-                console.error("Error al crear el expediente:", error);
-                setResponseMessage(`Error: ${error.message}`);
-                return;
-            }
+    //         const data = await response.json();
+    //         //verificar el id del expediente
+    //         if(data.id) {
+    //             console.log("Expediente creado con ID:", data.id);
+    //             //redirigir
+    //             alert("Expediente exitosamente creado. Ahora serás redirigido a la pagina de detalle del expediente para que sigas completando los siguiente datos necesarios ")
+    //             navigate(`/detalle/${data.id}`);
+    //         } else {
+    //             console.error("El backend no devolvió un ID válido para el expediente.");
+    //             alert("No se pudo obtener el ID del expediente. Inténtelo nuevamente.");
+    //         }
 
-            const data = await response.json();
-            //verificar el id del expediente
-            if(data.id) {
-                console.log("Expediente creado con ID:", data.id);
-                //redirigir
-                alert("Expediente exitosamente creado. Ahora serás redirigido a la pagina de detalle del expediente para que sigas completando los siguiente datos necesarios ")
+    //     } catch (err) {
+    //         console.error(err);
+    //         setResponseMessage("Error al conectar con el backend.");
+    //     }
+    // };
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Expediente creado con éxito:', data);
+                alert("Expediente exitosamente creado. Ahora serás redirigido a la pagina de detalle del expediente para que sigas completando los siguiente datos necesarios.");
                 navigate(`/detalle/${data.id}`);
             } else {
-                console.error("El backend no devolvió un ID válido para el expediente.");
-                alert("No se pudo obtener el ID del expediente. Inténtelo nuevamente.");
+                alert("Error al crear expediente.");
             }
-
         } catch (err) {
-            console.error(err);
-            setResponseMessage("Error al conectar con el backend.");
+            console.error("Error al enviar datos:", err);
         }
     };
 
@@ -168,6 +189,7 @@ function ExpedienteFormPage() {
     return (
         <div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px" }}>
             <h2>Crear Expediente: {tipoNombre} - {subtipoNombre}</h2>
+
             {/* Descripción */}
             <div>
                 <label>Descripción:</label>
@@ -186,31 +208,32 @@ function ExpedienteFormPage() {
 
             {/* Datos del Propietario */}
             <Desplegable title="Datos del Propietario">
-                <div>
-                    <label>Seleccionar Propietario:</label>
-                    <select
-                        value={propietarioSeleccionado}
-                        onChange={(e) => handlePropietarioSeleccionado(e.target.value)}
-                    >
-                        <option value="">Seleccione un propietario</option>
-                        {propietariosList.map((propietario) => (
-                            <option key={propietario.rut} value={propietario.rut}>
-                                {propietario.rut} - {propietario.nombres}
-                            </option>
-                        ))}
-                        <option value="nuevo">Crear nuevo propietario</option>
-                    </select>
-                </div>
+                <label>Seleccionar Propietario:</label>
+                <select
+                    value={propietarioSeleccionado}
+                    onChange={(e) => handlePropietarioSeleccionado(e.target.value)}
+                >
+                    <option value="">Seleccione un propietario</option>
+                    {propietariosList.map((p) => (
+                        <option key={p.rut} value={p.rut}>
+                            {p.rut} - {p.nombres}
+                        </option>
+                    ))}
+                    <option value="nuevo">Crear nuevo propietario</option>
+                </select>
 
-                {esNuevoPropietario && (
-                    <DatosPropietario onUpdate={setPropietario} />
-                )}
+                {esNuevoPropietario && <DatosPropietario propietario={propietario} onSave={setPropietario} />}
+            </Desplegable>
+
+            {/* Datos de la Propiedad */}
+            <Desplegable title="Datos de la Propiedad">
+                <DatosPropiedad propiedad={propiedad} onSave={setPropiedad} />
             </Desplegable>
 
             {/* Botones */}
             <div className="botones-der">
-                <button onClick={handleCancel}>Volver</button>
-                <button onClick={handleSubmit}>Crear expediente</button>
+                <button onClick={handleCancel}>Cancelar</button>
+                <button onClick={handleSubmit}>Crear Expediente</button>
             </div>
         </div>
     );
