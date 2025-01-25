@@ -108,18 +108,13 @@ function ExpedienteFormPage() {
 
     const handleSubmit = async () => {
         try {
-            console.log('--- Enviando datos al backend ---');
-            console.log('Descripción:', descripcion);
-            console.log('Propietario:', propietario);
-            console.log('Propiedad:', propiedad);
-
             const datosEnviados = {
                 descripcion,
                 tipo,
                 subtipo,
                 propietario,
                 propiedad,
-                usuarioEmail: auth.currentUser?.email || null,
+                usuarioEmail: auth.currentUser?.email,
             };
 
             const response = await fetch('http://localhost:4000/expedientes', {
@@ -128,12 +123,7 @@ function ExpedienteFormPage() {
                 body: JSON.stringify(datosEnviados),
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Error al crear expediente:', errorData);
-                alert('Error al crear expediente.');
-                return;
-            }
+            if (!response.ok) throw new Error("Error al guardar el expediente.");          
 
             const data = await response.json();
             console.log('Expediente creado:', data);

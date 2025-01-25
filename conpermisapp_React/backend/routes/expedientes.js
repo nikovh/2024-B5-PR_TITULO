@@ -165,6 +165,41 @@ router.get('/:id', async (req, res) => {
 });
 
 
+// idea de endpoint unificado
+//app.get('/expedientes/:id/detalle', async (req, res) => {
+router.get('/expedientes/:id/detalle', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Obtener expediente principal
+        const expediente = await Expedientes.findById(id);
+        if (!expediente) {
+            return res.status(404).json({ message: "Expediente no encontrado" });
+        }
+
+        // Obtener datos relacionados
+        const propiedad = await Propiedad.findOne({ expedienteId: id });
+        const propietario = await Propietario.findOne({ rut: expediente.propietarioRut });
+        const usuario = await Usuario.findOne({ email: expediente.Usuario_email });
+        const tipoExpediente = await TipoExpediente.findById(expediente.tipo);
+        const subTipoExpediente = await SubTipoExpediente.findById(expediente.subtipo);
+
+        // Respuesta unificada
+        res.json({
+            expediente,
+            propiedad,
+            propietario,
+            usuario,
+            tipoExpediente,
+            subTipoExpediente,
+        });
+    } catch (err) {
+        console.error("Error al obtener detalle del expediente:", err);
+        res.status(500).json({ message: "Error interno del servidor" });
+    }
+});
+
+
 
 // // POST descripcion y usuario, propietario
 // router.post('/', async (req, res) => {
