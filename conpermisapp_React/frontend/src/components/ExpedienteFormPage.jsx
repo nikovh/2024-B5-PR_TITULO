@@ -105,6 +105,8 @@ function ExpedienteFormPage() {
         setPropietario(updatedPropietario); // Actualizar el estado con los datos del componente hijo
     };
 
+
+/*
     const handleSubmit = async () => {
         console.log('--- Enviando datos al backend ---');
         console.log('Descripción:', descripcion);
@@ -183,6 +185,48 @@ function ExpedienteFormPage() {
             console.error("Error al enviar datos:", err);
         }
     };
+*/
+
+    const handleSubmit = async () => {
+        try {
+            console.log('--- Enviando datos al backend ---');
+            console.log('Descripción:', descripcion);
+            console.log('Propietario:', propietario);
+            console.log('Propiedad:', propiedad);
+
+            const datosEnviados = {
+                descripcion,
+                tipo,
+                subtipo,
+                propietario,
+                propiedad,
+            };
+
+            const response = await fetch('http://localhost:4000/expedientes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datosEnviados),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Error al crear expediente:', errorData);
+                alert('Error al crear expediente.');
+                return;
+            }
+
+            const data = await response.json();
+            console.log('Expediente creado:', data);
+            alert('Expediente creado exitosamente.');
+            navigate(`/detalle/${data.id}`);
+        } catch (error) {
+            console.error('Error al enviar datos:', error);
+            alert('Error de conexión.');
+        }
+    };
+
+
+
 
     const handleCancel = () => navigate("/dashboard");
 
