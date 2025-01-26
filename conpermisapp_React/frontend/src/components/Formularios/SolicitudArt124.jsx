@@ -5,7 +5,6 @@ import { useParams } from "react-router-dom";
 
 const SolicitudArt124 = () => {
   const { id } = useParams();
-  const [expediente, setExpediente] = useState(null);
   const [datos, setDatos] = useState(null);
   const [error, setError] = useState(null);
   const fileName = `conPermisApp_formulario_${id}.pdf`;
