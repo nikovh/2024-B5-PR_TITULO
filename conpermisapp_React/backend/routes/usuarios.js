@@ -1,137 +1,223 @@
+// const express = require('express');
+// const { getConnection, sql } = require('../db');
+// const router = express.Router();
+
+
+// // POST nuevo usuario
+// router.post('/', async (req, res) => {
+//     console.log("Datos recibidos en el backend:", req.body);
+//     const { 
+//         rut,
+//         nombres,
+//         apellidos,
+//         telefono,
+//         email,
+//         password,
+//         rol,
+//         patenteProfesional,
+//     } = req.body;
+
+//     //validar campos obligatorios
+//     if (!rut || !nombres || !email || !password ) {
+//         return res.status(400).json({ error: "Completa los campos obligatorios."});
+//     }
+
+//     try {
+//         const pool = await getConnection();
+
+//         // Validar si el rut o el email ya existen
+//         const usuarioExistente = await pool.request()
+//             .input("rut", sql.VarChar, rut)
+//             .input("email", sql.VarChar, email)
+//             .query("SELECT * FROM Usuario WHERE rut = @rut OR email = @email");
+
+//         if (usuarioExistente.recordset.length > 0) {
+//             return res.status(400).json({ error: "El RUT o correo electrónico ya está registrado." });
+//         }
+
+//         await pool.request()
+//             .input("rut", sql.VarChar, rut)
+//             .input("nombres", sql.VarChar, nombres)
+//             .input("apellidos", sql.VarChar, apellidos)
+//             .input("telefono", sql.Int, telefono)
+//             .input("email", sql.VarChar, email)
+//             .input("password", sql.VarChar, password)
+//             .input("rol", sql.VarChar, rol)
+//             .input("patenteProfesional", sql.VarChar, patenteProfesional || null)
+//             .query(`
+//                 INSERT INTO Usuario (
+//                     rut, 
+//                     nombres, 
+//                     apellidos, 
+//                     telefono, 
+//                     email, 
+//                     password, 
+//                     rol, 
+//                     patenteProfesional
+//                 ) VALUES (
+//                     @rut, 
+//                     @nombres, 
+//                     @apellidos, 
+//                     @telefono, 
+//                     @email, 
+//                     @password, 
+//                     @rol, 
+//                     @patenteProfesional
+//                 )
+//             `);
+//         res.status(201).json({ message: "Usuario registrado exitosamente." });
+//     } catch (err) {
+//         console.error("Error al registrar el usuario:", err);
+
+//         if (err.code === 'EREQUEST' && err.message.includes('duplicate')) {
+//             return res.status(400).json({ error: "El RUT o correo electrónico ya está registrado." });
+//         }
+
+//         res.status(500).json({ error: "Error al registrar al usuario." });
+//     }
+// });
+
+
+// // GET todos los usuarios
+// router.get('/', async (req, res) => {
+//     try {
+//         const pool = await getConnection();
+//         const result = await pool.request().query('SELECT * FROM Usuario');
+//         res.status(200).json(result.recordset); // Enviar los datos como JSON
+//     } catch (err) {
+//         console.error("Error al obtener usuarios:", err);
+//         res.status(500).json({ error: "Error al obtener usuarios." });
+//     }
+// });
+
+
+// // GET usuario por rut
+// router.get('/:rut', async (req, res) => {
+//     const { rut } = req.params;
+
+//     try {
+//         const pool = await getConnection();
+//         const result = await pool.request()
+//             .input("rut", sql.VarChar, rut)
+//             .query('SELECT * FROM Usuario WHERE rut = @rut');
+
+//         if (result.recordset.length === 0) {
+//             return res.status(404).json({ error: "Usuario no encontrado." });
+//         }
+
+//         res.status(200).json(result.recordset[0]);
+//     } catch (err) {
+//         console.error("Error al obtener usuario:", err);
+//         res.status(500).json({ error: "Error al obtener usuario." });
+//     }
+// });
+
+// // GET usuario por email
+// router.get('/email/:email', async (req, res) => {
+//     const {email} = req.params;
+
+//     try {
+//         const pool = await getConnection();
+//         const result = await pool.request()
+//             .input("email", sql.VarChar, email)
+//             .query('SELECT * FROM Usuario WHERE email = @email');
+        
+//         if (result.recordset.length === 0) {
+//             return res.status(404).json({ error: "Usuario no encontrado." });
+//         }
+
+//         res.status(200).json(result.recordset[0]);
+//     } catch (err) {
+//         console.error("Error al obtener usuario por email:", err);
+//         res.status(500).json({ error: "Error al obtener usuario por email."});
+//     }
+// });
+
+
+// module.exports = router;
+
+
 const express = require('express');
 const { getConnection, sql } = require('../db');
 const router = express.Router();
 
+// Obtener usuarios con filtros opcionales por RUT o email
+router.get('/', async (req, res) => {
+    const { rut, email } = req.query;
 
-// POST nuevo usuario
+    try {
+        const pool = await getConnection();
+        let query = 'SELECT * FROM Usuario';
+
+        if (rut) {
+            query += ' WHERE rut = @rut';
+        } else if (email) {
+            query += ' WHERE email = @email';
+        }
+
+        const request = pool.request();
+
+        if (rut) {
+            request.input('rut', sql.VarChar, rut);
+        } else if (email) {
+            request.input('email', sql.VarChar, email);
+        }
+
+        const result = await request.query(query);
+
+        if (result.recordset.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado.' });
+        }
+
+        res.status(200).json(result.recordset);
+    } catch (err) {
+        console.error('Error al obtener usuarios:', err);
+        res.status(500).json({ error: 'Error al obtener usuarios.' });
+    }
+});
+
+// Crear un nuevo usuario
 router.post('/', async (req, res) => {
-    console.log("Datos recibidos en el backend:", req.body);
-    const { 
-        rut,
-        nombres,
-        apellidos,
-        telefono,
-        email,
-        password,
-        rol,
-        patenteProfesional,
-    } = req.body;
+    const { rut, nombres, apellidos, telefono, email, password, rol, patenteProfesional } = req.body;
 
-    //validar campos obligatorios
-    if (!rut || !nombres || !email || !password ) {
-        return res.status(400).json({ error: "Completa los campos obligatorios."});
+    if (!rut || !nombres || !email || !password) {
+        return res.status(400).json({ error: 'Completa los campos obligatorios.' });
     }
 
     try {
         const pool = await getConnection();
 
-        // Validar si el rut o el email ya existen
         const usuarioExistente = await pool.request()
-            .input("rut", sql.VarChar, rut)
-            .input("email", sql.VarChar, email)
-            .query("SELECT * FROM Usuario WHERE rut = @rut OR email = @email");
+            .input('rut', sql.VarChar, rut)
+            .input('email', sql.VarChar, email)
+            .query('SELECT * FROM Usuario WHERE rut = @rut OR email = @email');
 
         if (usuarioExistente.recordset.length > 0) {
-            return res.status(400).json({ error: "El RUT o correo electrónico ya está registrado." });
+            return res.status(400).json({ error: 'El RUT o correo electrónico ya está registrado.' });
         }
 
         await pool.request()
-            .input("rut", sql.VarChar, rut)
-            .input("nombres", sql.VarChar, nombres)
-            .input("apellidos", sql.VarChar, apellidos)
-            .input("telefono", sql.Int, telefono)
-            .input("email", sql.VarChar, email)
-            .input("password", sql.VarChar, password)
-            .input("rol", sql.VarChar, rol)
-            .input("patenteProfesional", sql.VarChar, patenteProfesional || null)
+            .input('rut', sql.VarChar, rut)
+            .input('nombres', sql.VarChar, nombres)
+            .input('apellidos', sql.VarChar, apellidos)
+            .input('telefono', sql.Int, telefono)
+            .input('email', sql.VarChar, email)
+            .input('password', sql.VarChar, password)
+            .input('rol', sql.VarChar, rol)
+            .input('patenteProfesional', sql.VarChar, patenteProfesional || null)
             .query(`
                 INSERT INTO Usuario (
-                    rut, 
-                    nombres, 
-                    apellidos, 
-                    telefono, 
-                    email, 
-                    password, 
-                    rol, 
-                    patenteProfesional
+                    rut, nombres, apellidos, telefono, email, password, rol, patenteProfesional
                 ) VALUES (
-                    @rut, 
-                    @nombres, 
-                    @apellidos, 
-                    @telefono, 
-                    @email, 
-                    @password, 
-                    @rol, 
-                    @patenteProfesional
+                    @rut, @nombres, @apellidos, @telefono, @email, @password, @rol, @patenteProfesional
                 )
             `);
-        res.status(201).json({ message: "Usuario registrado exitosamente." });
+
+        res.status(201).json({ message: 'Usuario registrado exitosamente.' });
     } catch (err) {
-        console.error("Error al registrar el usuario:", err);
-
-        if (err.code === 'EREQUEST' && err.message.includes('duplicate')) {
-            return res.status(400).json({ error: "El RUT o correo electrónico ya está registrado." });
-        }
-
-        res.status(500).json({ error: "Error al registrar al usuario." });
+        console.error('Error al registrar el usuario:', err);
+        res.status(500).json({ error: 'Error al registrar al usuario.' });
     }
 });
-
-
-// GET todos los usuarios
-router.get('/', async (req, res) => {
-    try {
-        const pool = await getConnection();
-        const result = await pool.request().query('SELECT * FROM Usuario');
-        res.status(200).json(result.recordset); // Enviar los datos como JSON
-    } catch (err) {
-        console.error("Error al obtener usuarios:", err);
-        res.status(500).json({ error: "Error al obtener usuarios." });
-    }
-});
-
-
-// GET usuario por rut
-router.get('/:rut', async (req, res) => {
-    const { rut } = req.params;
-
-    try {
-        const pool = await getConnection();
-        const result = await pool.request()
-            .input("rut", sql.VarChar, rut)
-            .query('SELECT * FROM Usuario WHERE rut = @rut');
-
-        if (result.recordset.length === 0) {
-            return res.status(404).json({ error: "Usuario no encontrado." });
-        }
-
-        res.status(200).json(result.recordset[0]);
-    } catch (err) {
-        console.error("Error al obtener usuario:", err);
-        res.status(500).json({ error: "Error al obtener usuario." });
-    }
-});
-
-// GET usuario por email
-router.get('/email/:email', async (req, res) => {
-    const {email} = req.params;
-
-    try {
-        const pool = await getConnection();
-        const result = await pool.request()
-            .input("email", sql.VarChar, email)
-            .query('SELECT * FROM Usuario WHERE email = @email');
-        
-        if (result.recordset.length === 0) {
-            return res.status(404).json({ error: "Usuario no encontrado." });
-        }
-
-        res.status(200).json(result.recordset[0]);
-    } catch (err) {
-        console.error("Error al obtener usuario por email:", err);
-        res.status(500).json({ error: "Error al obtener usuario por email."});
-    }
-});
-
 
 module.exports = router;

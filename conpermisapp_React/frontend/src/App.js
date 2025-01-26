@@ -43,17 +43,3 @@ function App() {
 }
 
 export default App;
-
-
-// import React from "react";
-// import PruebaHook from "./components/hooks/PruebaHook"; // Ajusta la ruta según tu proyecto
-
-// const App = () => {
-//     return (
-//         <div>
-//             <PruebaHook expedienteId="1074" />
-//         </div>
-//     );
-// };
-
-// export default App;

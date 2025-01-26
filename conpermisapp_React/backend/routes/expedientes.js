@@ -3,86 +3,31 @@ const { getConnection, sql } = require('../db');
 
 const router = express.Router();
 
-//--------- RUTAS ---------//
-
-
-/* GET /expedientes
-  - Si NO se pasa ningún parámetro retorna TODOS los expedientes
-  - Si se pasa "?usuario_email=xxxx" filtra por usuario_email
-*/
+// Consolidado: Obtener expedientes con filtro opcional por usuario_email o usuario_rut
 router.get('/', async (req, res) => {
     const usuarioEmail = req.query.usuario_email;
-    try {
-        const pool = await getConnection();
-
-        // Validar que se recibe el parámetro
-        if (!usuarioEmail) {
-            console.error("El parámetro 'usuario_email' no fue proporcionado.");
-            return res.status(400).json({ error: "El parámetro 'usuario_email' es obligatorio." });
-        }
-
-        //Validar que el email exista en la tabla Usuario
-        const usuarioCheck = await pool.request()
-            .input('email', sql.VarChar, usuarioEmail)
-            .query('SELECT email FROM Usuario WHERE email = @email');
-
-        if (usuarioCheck.recordset.length === 0) {
-            console.log(`El email ${usuarioEmail} no está registrado en la base de datos.`);
-            return res.status(404).json({ message: "Usuario no encontrado." });
-        }
-
-        console.log(`Parámetro recibido: usuario_email=${usuarioEmail}`);
-
-        // Filtrar por Usuario_email excluyendo NULL
-        const query = usuarioEmail
-            ? `
-                SELECT *
-                FROM Expedientes
-                WHERE Usuario_email = @usuarioEmail
-              `
-            : `
-                SELECT *
-                FROM Expedientes
-              `;
-
-        // Ejecutar la consulta
-        const result = await pool.request()
-            .input('usuarioEmail', sql.VarChar, usuarioEmail || null)
-            .query(query);
-
-        // Verificar el resultado
-        if (result.recordset.length === 0) {
-            console.log(`No se encontraron expedientes para usuario_email=${usuarioEmail}`);
-            return res.status(200).json([]);
-        }
-
-        console.log(`Expedientes encontrados: ${result.recordset.length}`);
-        res.status(200).json(result.recordset);
-    } catch (error) {
-        console.error("Error al obtener expedientes:", error);
-        res.status(500).json({ error: "Error al obtener expedientes" });
-    }
-});
-
-
-// GET /expedientes con JOIN - Obtener expedientes todos los expedientes
-router.get('/expedientes', async (req, res) => {
     const usuarioRut = req.query.usuario_rut;
+
     try {
         const pool = await getConnection();
         let query = `
             SELECT
                 e.*,
-                p.rut AS Propietario_rut
+                p.rut AS Propietario_rut,
+                p.nombres AS Propietario_nombres
             FROM Expedientes e
             LEFT JOIN Propietario p ON e.Propietario_rut = p.rut`;
 
-        if (usuarioRut) {
-            query += ' WHERE e.usuario_rut = @usuarioRut';
+        if (usuarioEmail) {
+            query += ' WHERE e.Usuario_email = @usuarioEmail';
+        } else if (usuarioRut) {
+            query += ' WHERE e.Usuario_rut = @usuarioRut';
         }
 
         const request = pool.request();
-        if (usuarioRut) {
+        if (usuarioEmail) {
+            request.input('usuarioEmail', sql.VarChar, usuarioEmail);
+        } else if (usuarioRut) {
             request.input('usuarioRut', sql.VarChar, usuarioRut);
         }
 
@@ -94,8 +39,7 @@ router.get('/expedientes', async (req, res) => {
     }
 });
 
-
-// GET TIPOS de expedientes
+// Obtener tipos de expedientes
 router.get('/tipo-expediente', async (req, res) => {
     try {
         const pool = await getConnection();
@@ -107,8 +51,7 @@ router.get('/tipo-expediente', async (req, res) => {
     }
 });
 
-
-// GET SUBTIPOS de expedientes
+// Obtener subtipos de expedientes
 router.get('/subtipo-expediente', async (req, res) => {
     try {
         const pool = await getConnection();
@@ -120,18 +63,14 @@ router.get('/subtipo-expediente', async (req, res) => {
     }
 });
 
-
-
-// GET expedientes con :id
-router.get('/:id', async (req, res) => {
-    const { id } = req.params; // Extraer el ID de los parámetros de la URL
+// Obtener detalle de un expediente por ID
+router.get('/:id/detalle', async (req, res) => {
+    const { id } = req.params;
 
     try {
         const pool = await getConnection();
-
-        // Consulta SQL para obtener un expediente por ID incluyendo el tipoEstado
         const result = await pool.request()
-            .input('id', sql.Int, id) // Usar un parámetro seguro
+            .input('id', sql.Int, id)
             .query(`
                 SELECT 
                     e.id AS expedienteId,
@@ -151,224 +90,82 @@ router.get('/:id', async (req, res) => {
                 WHERE e.id = @id
             `);
 
-        // Si no se encuentra el expediente, retornar un error 404
         if (result.recordset.length === 0) {
             return res.status(404).json({ error: 'Expediente no encontrado' });
         }
 
-        // Retornar el expediente encontrado
         res.status(200).json(result.recordset[0]);
     } catch (error) {
-        console.error('Error al obtener el expediente:', error);
-        res.status(500).json({ error: 'Error al obtener el expediente' });
+        console.error('Error al obtener el detalle del expediente:', error);
+        res.status(500).json({ error: 'Error al obtener el detalle del expediente.' });
     }
 });
 
-
-// idea de endpoint unificado
-//app.get('/expedientes/:id/detalle', async (req, res) => {
-router.get('/expedientes/:id/detalle', async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        // Obtener expediente principal
-        const expediente = await Expedientes.findById(id);
-        if (!expediente) {
-            return res.status(404).json({ message: "Expediente no encontrado" });
-        }
-
-        // Obtener datos relacionados
-        const propiedad = await Propiedad.findOne({ expedienteId: id });
-        const propietario = await Propietario.findOne({ rut: expediente.propietarioRut });
-        const usuario = await Usuario.findOne({ email: expediente.Usuario_email });
-        const tipoExpediente = await TipoExpediente.findById(expediente.tipo);
-        const subTipoExpediente = await SubTipoExpediente.findById(expediente.subtipo);
-
-        // Respuesta unificada
-        res.json({
-            expediente,
-            propiedad,
-            propietario,
-            usuario,
-            tipoExpediente,
-            subTipoExpediente,
-        });
-    } catch (err) {
-        console.error("Error al obtener detalle del expediente:", err);
-        res.status(500).json({ message: "Error interno del servidor" });
-    }
-});
-
-
-
-// // POST descripcion y usuario, propietario
-// router.post('/', async (req, res) => {
-//     const { descripcion, usuarioEmail, tipo, subtipo, propietario, esNuevoPropietario } = req.body;
-
-//     console.log("Datos recibidos:", { descripcion, usuarioEmail, tipo, subtipo, propietario, esNuevoPropietario });
-
-//     try {
-//         const pool = await getConnection();
-//         console.log("Conexión con la base de datos establecida.");
-
-//         if(esNuevoPropietario) {
-//             // Verificar propietario
-//             const propietarioCheck = await pool.request()
-//                 .input("rut", sql.VarChar, propietario.rut)
-//                 .query("SELECT rut FROM Propietario WHERE rut = @rut");
-
-//             if(propietarioCheck.recordset.length === 0) {
-//                 //crear propietario
-//                 await pool.request()
-//                     .input("rut", sql.VarChar, propietario.rut)
-//                     .input("nombres", sql.VarChar, propietario.nombres)
-//                     .input("apellidos", sql.VarChar, propietario.apellidos)
-//                     .input("email", sql.VarChar, propietario.email)
-//                     .input("telefono", sql.VarChar, propietario.telefono)
-//                     .query(`
-//                         INSERT INTO Propietario (rut, nombres, apellidos, email, telefono)
-//                         VALUES (@rut, @nombres, @apellidos, @email, @telefono)
-//                     `);
-//                 console.log("Nuevo propietario creado:", propietario);
-//             }
-//         }
-
-//         // Crear el expediente
-//         const expedienteResult = await pool.request()
-//             .input("descripcion", sql.VarChar, descripcion)
-//             .input("usuarioEmail", sql.VarChar, usuarioEmail)
-//             .input("tipo", sql.VarChar, tipo)
-//             .input("subtipo", sql.VarChar, subtipo)
-//             .input("propietarioRut", sql.VarChar, propietario.rut)
-//             .input("estadoExpedienteId", sql.Int, 1) // Valor por defecto
-//             .query(`
-//                 INSERT INTO Expedientes (descripcion, Usuario_email, tipo, subtipo, Propietario_rut)
-//                 OUTPUT Inserted.id
-//                 VALUES (@descripcion, @usuarioEmail, @tipo, @subtipo, @propietarioRut)
-//             `);
-
-//         const expedienteId = expedienteResult.recordset[0].id;
-//         console.log("Expediente creado con ID:", expedienteId);
-
-//         if (!expedienteId) {
-//             console.error("No se pudo obtener el ID del expediente.");
-//             return res.status(500).json({ error: "No se pudo crear el expediente correctamente." });
-//         }
-
-//         console.log("Expediente creado con ID:", expedienteId);
-
-//         res.status(201).json({
-//             message: "Expediente creado exitosamente.",
-//             id: expedienteId, 
-//         });
-//     } catch (err) {
-//         console.error("Error al crear el expediente:", err);
-//         res.status(500).json({ error: "Error al crear el expediente." });
-//     }
-// });
-
-
+// Crear un nuevo expediente con propietario y propiedad asociada
 router.post('/', async (req, res) => {
-    const { descripcion, tipo, subtipo, propietario, propiedad } = req.body;
+    const { descripcion, tipo, subtipo, propietario, propiedad, usuarioRut } = req.body;
 
-    let transaction;
+    if (!descripcion || !tipo || !subtipo || !propietario) {
+        return res.status(400).json({ error: 'Faltan campos obligatorios.' });
+    }
 
     try {
         const pool = await getConnection();
-
-        // Inicia una transacción
-        transaction = pool.transaction();
+        const transaction = new sql.Transaction(pool);
         await transaction.begin();
-        console.log('--- Transacción iniciada ---');
 
-        // Inserta el expediente
-        console.log('Insertando expediente...');
-        const expedienteResult = await transaction.request()
-            .input('descripcion', sql.VarChar, descripcion)
-            .input('tipo', sql.VarChar, tipo)
-            .input('subtipo', sql.VarChar, subtipo)
-            .input('propietarioRut', sql.VarChar, propietario.rut)
-            .query(`
-                INSERT INTO Expedientes (Descripcion, Tipo, Subtipo, Propietario_Rut)
-                OUTPUT INSERTED.ID
-                VALUES (@descripcion, @tipo, @subtipo, @propietarioRut)
-            `);
+        try {
+            // Verificar o crear propietario
+            const propietarioExistente = await transaction.request()
+                .input('rut', sql.VarChar, propietario.rut)
+                .query('SELECT * FROM Propietario WHERE rut = @rut');
 
-        const expedienteId = expedienteResult.recordset[0].ID;
-        console.log('Expediente creado con ID:', expedienteId);
+            if (propietarioExistente.recordset.length === 0) {
+                await transaction.request()
+                    .input('rut', sql.VarChar, propietario.rut)
+                    .input('nombres', sql.VarChar, propietario.nombres)
+                    .query(`INSERT INTO Propietario (rut, nombres) VALUES (@rut, @nombres)`);
+            }
 
-        // Inserta la propiedad asociada al expediente
-        console.log('Insertando propiedad asociada al expediente...');
-        await transaction.request()
-            .input('rolSII', sql.VarChar, propiedad.rolSII)
-            .input('direccion', sql.VarChar, propiedad.direccion)
-            .input('numero', sql.Int, propiedad.numero)
-            .input('comuna', sql.VarChar, propiedad.comuna)
-            .input('region', sql.VarChar, propiedad.region)
-            .input('inscFojas', sql.VarChar, propiedad.inscFojas)
-            .input('inscNumero', sql.VarChar, propiedad.inscNumero)
-            .input('inscYear', sql.Int, propiedad.inscYear)
-            .input('numPisos', sql.Int, propiedad.numPisos)
-            .input('m2', sql.Float, propiedad.m2)
-            .input('destino', sql.VarChar, propiedad.destino)
-            .input('expedienteId', sql.Int, expedienteId)
-            .query(`
-                INSERT INTO Propiedad (RolSII, Direccion, Numero, Comuna, Region, InscFojas, InscNumero, InscYear, NumPisos, M2, Destino, Expediente_id)
-                VALUES (@rolSII, @direccion, @numero, @comuna, @region, @inscFojas, @inscNumero, @inscYear, @numPisos, @m2, @destino, @expedienteId)
-            `);
+            // Crear expediente
+            const expedienteResult = await transaction.request()
+                .input('descripcion', sql.VarChar, descripcion)
+                .input('tipo', sql.VarChar, tipo)
+                .input('subtipo', sql.VarChar, subtipo)
+                .input('propietarioRut', sql.VarChar, propietario.rut)
+                .query(`
+                    INSERT INTO Expedientes (descripcion, tipo, subtipo, propietario_rut)
+                    OUTPUT INSERTED.id
+                    VALUES (@descripcion, @tipo, @subtipo, @propietarioRut)
+                `);
 
-        console.log('Propiedad asociada creada correctamente.');
+            const expedienteId = expedienteResult.recordset[0].id;
 
-        // Confirma la transacción
-        await transaction.commit();
-        console.log('--- Transacción confirmada ---');
+            // Crear propiedad asociada (si aplica)
+            if (propiedad) {
+                await transaction.request()
+                    .input('rolSII', sql.VarChar, propiedad.rolSII)
+                    .input('direccion', sql.VarChar, propiedad.direccion)
+                    .input('expedienteId', sql.Int, expedienteId)
+                    .query(`
+                        INSERT INTO Propiedad (rolSII, direccion, expediente_id)
+                        VALUES (@rolSII, @direccion, @expedienteId)
+                    `);
+            }
 
-        res.status(201).json({ id: expedienteId });
-    } catch (error) {
-        console.error('Error durante la transacción:', error);
-
-        if (transaction) {
+            await transaction.commit();
+            res.status(201).json({ id: expedienteId, message: 'Expediente creado exitosamente' });
+        } catch (err) {
             await transaction.rollback();
-            console.log('--- Transacción revertida ---');
+            throw err;
         }
-
-        res.status(500).json({ error: 'Error al crear el expediente.' });
-    }
-});
-
-
-
-// Crear expediente y propiedad asociada
-router.post('/expedientes', async (req, res) => {
-    const { descripcion, tipo, subtipo, propietario, propiedad } = req.body;
-    try {
-        // Crear expediente
-        const expediente = await db.Expedientes.create({
-            descripcion,
-            tipo,
-            subtipo,
-            propietarioRut: propietario.rut,
-            EstadoExpediente_id: 1,
-        });
-
-        // Crear propiedad asociada
-        if (propiedad) {
-            await db.Propiedad.create({
-                ...propiedad,
-                expedienteId: expediente.id, // Asociar al expediente
-            });
-        }
-
-        res.status(201).json({ id: expediente.id });
     } catch (err) {
         console.error('Error al crear expediente:', err);
-        res.status(500).json({ error: 'Error al crear expediente y propiedad' });
+        res.status(500).json({ error: 'Error al crear expediente.' });
     }
 });
 
-
-
-// PUT /expedientes/:id - Actualizar un expediente por ID
+// Actualizar un expediente por ID
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const { descripcion, tipo, subtipo, estadoExpedienteId } = req.body;
@@ -376,7 +173,6 @@ router.put('/:id', async (req, res) => {
     try {
         const pool = await getConnection();
 
-        // Actualizar el expediente
         const result = await pool.request()
             .input('id', sql.Int, id)
             .input('descripcion', sql.VarChar, descripcion)
@@ -404,15 +200,13 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-
-// DELETE /expedientes/:id - Eliminar un expediente por ID
+// Eliminar un expediente por ID
 router.delete('/:id', async (req, res) => {
     const { id } = req.params;
 
     try {
         const pool = await getConnection();
 
-        // Eliminar el expediente
         const result = await pool.request()
             .input('id', sql.Int, id)
             .query(`
@@ -431,6 +225,4 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-
-// Exportar directamente el router
 module.exports = router;

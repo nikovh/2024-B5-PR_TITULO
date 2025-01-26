@@ -144,42 +144,56 @@
 
 // };
 
-
+//op2
 // export default ExpedienteDetalle;
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Desplegable from "./FormPage/Desplegable";
 import DatosPropiedad from "./FormPage/DatosPropiedad";
+import DatosPropietario from "./FormPage/DatosPropietario";
 
 const ExpedienteDetalle = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [propiedad, setPropiedad] = useState(null);
+    const [propietario, setPropietario] =useState(null);
     const [error, setError] = useState(null);
 
-    // Fetch de los datos de la propiedad
+    // Fetch de los datos de la propiedad y propietario
     useEffect(() => {
-        const fetchPropiedad = async () => {
+        const fetchDatos = async () => {
             try {
-                const response = await fetch(`http://localhost:4000/propiedades/expedientes/${id}`);
-                if (!response.ok) {
-                    throw new Error("No se pudieron cargar los datos de la propiedad.");
-                }
-                const data = await response.json();
-                setPropiedad(data);
+                // Fetch propiedad
+                const propiedadResponse = await fetch(`http://localhost:4000/propiedades/expedientes/${id}`);
+                if (!propiedadResponse.ok) throw new Error("No se pudieron cargar los datos de la propiedad.");              
+                const propiedadData = await propiedadResponse.json();
+                setPropiedad(propiedadData);
+
+                // Fetch propietario
+                const propietarioResponse = await fetch(`http://localhost:4000/propietarios/${propiedadData.propietarioRut}`);
+                if (!propietarioResponse.ok) throw new Error("No se pudieron cargar los datos del propietario.");
+                const propietarios = await propietarioResponse.json();
+                const propietarioEncontrado = propietarios.find(p => p.rut === propiedadData.propietarioRut);
+                if (!propietarioEncontrado) throw new Error("Propietario no encontrado.");
+                setPropietario(propietarioEncontrado);
+
             } catch (err) {
-                console.error("Error al obtener los datos de la propiedad:", err);
+                console.error("Error al obtener los datos:", err);
                 setError(err.message);
             }
         };
 
-        if (id) fetchPropiedad();
+        if (id) fetchDatos();
     }, [id]);
 
     const handleSavePropiedad = (updatedPropiedad) => {
-        // Aquí se manejará la actualización de los datos de la propiedad
         setPropiedad(updatedPropiedad);
         console.log("Propiedad actualizada:", updatedPropiedad);
+    };
+
+    const handleSavePropietario = (updatedPropietario) => {
+        setPropietario(updatedPropietario);
+        console.log("Propietario actualizado:", updatedPropietario);
     };
 
     const handleCancel = () => {
@@ -192,16 +206,29 @@ const ExpedienteDetalle = () => {
             {error ? (
                 <p style={{ color: "red" }}>{error}</p>
             ) : (
-                <Desplegable title="Datos de la Propiedad">
-                    {propiedad ? (
-                        <DatosPropiedad 
-                            propiedad={propiedad} 
-                            onSave={handleSavePropiedad} 
-                        />
-                    ) : (
-                        <p>Cargando datos de la propiedad...</p>
-                    )}
-                </Desplegable>
+                <>
+                    <Desplegable title="Datos de la Propiedad">
+                        {propiedad ? (
+                            <DatosPropiedad 
+                                propiedad={propiedad} 
+                                onSave={handleSavePropiedad} 
+                            />
+                        ) : (
+                            <p>Cargando datos de la propiedad...</p>
+                        )}
+                    </Desplegable>
+
+                    <Desplegable title="Datos del Propietario">
+                        {propietario ? (
+                            <DatosPropietario 
+                                propietario={propietario} 
+                                onSave={handleSavePropietario} 
+                            />
+                        ) : (
+                            <p>Cargando datos del propietario...</p>
+                        )}
+                    </Desplegable>
+                </>
             )}
 
             <button onClick={handleCancel} style={{ marginTop: "20px" }}>Volver</button>
@@ -210,6 +237,3 @@ const ExpedienteDetalle = () => {
 };
 
 export default ExpedienteDetalle;
-
-
-//op2

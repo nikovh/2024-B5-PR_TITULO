@@ -23,7 +23,7 @@ function Dashboard() {
                 const email = user.email;
     
                 // Solicitud para obtener el usuario
-                const userResponse = await fetch(`http://localhost:4000/usuarios/email/${email}`);
+                const userResponse = await fetch(`http://localhost:4000/usuarios?email=${email}`);
                 if (!userResponse.ok) throw new Error("No se encontró el usuario en la base de datos.");
                 const userData = await userResponse.json();
                 console.log(userData)
