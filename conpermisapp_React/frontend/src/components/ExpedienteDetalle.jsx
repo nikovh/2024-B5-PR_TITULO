@@ -129,17 +129,17 @@
 //     );
 
 //     // return (
-//     //     <div style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
-//     //         <h1>Detalle del Expediente</h1>
-//     //         <p><strong>ID:</strong> {expediente.id}</p>
-//     //         <p><strong>Descripción:</strong> {expediente.descripcion}</p>
-//     //         <p><strong>Propietario:</strong> {propietario?.nombres} {propietario?.apellidos}</p>
-//     //         <p><strong>Dirección de la Propiedad:</strong> {propiedad?.direccion} {propiedad?.numero}</p>
-//     //         <p><strong>Arquitecto:</strong> {usuario?.nombres} {usuario?.apellidos}</p>
-//     //         <p><strong>Tipo de Expediente:</strong> {tipoExpediente?.nombre}</p>
-//     //         <p><strong>Subtipo de Expediente:</strong> {subTipoExpediente?.nombre}</p>
-//     //         <button onClick={() => navigate("/dashboard")}>Volver</button>
-//     //     </div>
+        // <div style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
+        //     <h1>Detalle del Expediente</h1>
+        //     <p><strong>ID:</strong> {expediente.id}</p>
+        //     <p><strong>Descripción:</strong> {expediente.descripcion}</p>
+        //     <p><strong>Propietario:</strong> {propietario?.nombres} {propietario?.apellidos}</p>
+        //     <p><strong>Dirección de la Propiedad:</strong> {propiedad?.direccion} {propiedad?.numero}</p>
+        //     <p><strong>Arquitecto:</strong> {usuario?.nombres} {usuario?.apellidos}</p>
+        //     <p><strong>Tipo de Expediente:</strong> {tipoExpediente?.nombre}</p>
+        //     <p><strong>Subtipo de Expediente:</strong> {subTipoExpediente?.nombre}</p>
+        //     <button onClick={() => navigate("/dashboard")}>Volver</button>
+        // </div>
 //     // );
 
 // };
@@ -193,21 +193,43 @@ const ExpedienteDetalle = () => {
     useEffect(() => {
         const fetchDatos = async () => {
             try {
-                // Fetch propiedad y propietario en una sola llamada 
+                // Fetch propiedad y expediente en una sola llamada 
                 const response = await fetch(`http://localhost:4000/propiedades/expedientes/${id}/detalle`);
                 if (!response.ok) throw new Error("No se pudieron cargar los datos del expediente.");
                 const data = await response.json();
-                
-                if (!data.propiedad || !data.propietario) throw new Error("Datos incompletos del expediente.");
-
+    
+                console.log("Datos del expediente recibidos:", data);
+    
+                // Establecer datos de propiedad y expediente
                 setPropiedad(data.propiedad);
-                setPropietario(data.propietario);
+    
+                // Validar si el expediente tiene un propietario asociado
+                if (data.expediente && data.expediente.propietarioRut) {
+                    console.log("RUT para el fetch del propietario:", data.expediente.propietarioRut);
+    
+                    // Fetch del propietario
+                    const propietarioResponse = await fetch(`http://localhost:4000/propietarios?rut=${data.expediente.propietarioRut}`);
+                    if (!propietarioResponse.ok) {
+                        throw new Error(`Error al obtener los datos del propietario con RUT ${data.expediente.propietarioRut}`);
+                    }
+    
+                    const propietarioData = await propietarioResponse.json();
+    
+                    if (Array.isArray(propietarioData) && propietarioData.length > 0) {
+                        setPropietario(propietarioData[0]);
+                    } else {
+                        throw new Error("No se encontraron datos del propietario en la respuesta del servidor.");
+                    }
+                } else {
+                    console.warn("El expediente no tiene un propietario asociado.");
+                    setPropietario(null);
+                }
             } catch (err) {
                 console.error("Error al obtener los datos:", err);
                 setError(err.message);
             }
         };
-
+    
         if (id) fetchDatos();
     }, [id]);
 
@@ -261,7 +283,9 @@ const ExpedienteDetalle = () => {
     // );
 
     return (
+        
         <div style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
+            
             <h1>Detalles del Expediente</h1>
             {error ? (
                 <p style={{ color: "red" }}>{error}</p>
