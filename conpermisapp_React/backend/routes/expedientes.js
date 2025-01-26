@@ -64,6 +64,44 @@ router.get('/subtipo-expediente', async (req, res) => {
 });
 
 // Obtener detalle de un expediente por ID
+// router.get('/:id/detalle', async (req, res) => {
+//     const { id } = req.params;
+
+//     try {
+//         const pool = await getConnection();
+//         const result = await pool.request()
+//             .input('id', sql.Int, id)
+//             .query(`
+//                 SELECT 
+//                     e.id AS expedienteId,
+//                     e.descripcion,
+//                     e.tipo,
+//                     e.subtipo,
+//                     e.EstadoExpediente_id,
+//                     ee.tipoEstado AS estadoNombre, 
+//                     e.fechaCreacion,
+//                     e.Usuario_email,
+//                     p.rut AS propietarioRut,
+//                     p.nombres AS propietarioNombres,
+//                     p.apellidos AS propietarioApellidos
+//                 FROM Expedientes e
+//                 LEFT JOIN Propietario p ON e.Propietario_rut = p.rut
+//                 LEFT JOIN EstadoExpediente ee ON e.EstadoExpediente_id = ee.id
+//                 WHERE e.id = @id
+//             `);
+
+//         if (result.recordset.length === 0) {
+//             return res.status(404).json({ error: 'Expediente no encontrado' });
+//         }
+
+//         res.status(200).json(result.recordset[0]);
+//     } catch (error) {
+//         console.error('Error al obtener el detalle del expediente:', error);
+//         res.status(500).json({ error: 'Error al obtener el detalle del expediente.' });
+//     }
+// });
+
+// Obtener detalle de un expediente por ID
 router.get('/:id/detalle', async (req, res) => {
     const { id } = req.params;
 
@@ -83,10 +121,24 @@ router.get('/:id/detalle', async (req, res) => {
                     e.Usuario_email,
                     p.rut AS propietarioRut,
                     p.nombres AS propietarioNombres,
-                    p.apellidos AS propietarioApellidos
+                    p.apellidos AS propietarioApellidos,
+                    p.email AS propietarioEmail,
+                    p.telefono AS propietarioTelefono,
+                    pr.rolSII AS propiedadRolSII,
+                    pr.direccion AS propiedadDireccion,
+                    pr.numero AS propiedadNumero,
+                    pr.comuna AS propiedadComuna,
+                    pr.region AS propiedadRegion,
+                    pr.inscFojas AS propiedadInscFojas,
+                    pr.inscNumero AS propiedadInscNumero,
+                    pr.inscYear AS propiedadInscYear,
+                    pr.numPisos AS propiedadNumPisos,
+                    pr.m2 AS propiedadM2,
+                    pr.destino AS propiedadDestino
                 FROM Expedientes e
                 LEFT JOIN Propietario p ON e.Propietario_rut = p.rut
                 LEFT JOIN EstadoExpediente ee ON e.EstadoExpediente_id = ee.id
+                LEFT JOIN Propiedad pr ON e.id = pr.expediente_id
                 WHERE e.id = @id
             `);
 
@@ -94,16 +146,52 @@ router.get('/:id/detalle', async (req, res) => {
             return res.status(404).json({ error: 'Expediente no encontrado' });
         }
 
-        res.status(200).json(result.recordset[0]);
+        // Estructurar la respuesta con datos separados
+        const expediente = {
+            id: result.recordset[0].expedienteId,
+            descripcion: result.recordset[0].descripcion,
+            tipo: result.recordset[0].tipo,
+            subtipo: result.recordset[0].subtipo,
+            estado: {
+                id: result.recordset[0].EstadoExpediente_id,
+                nombre: result.recordset[0].estadoNombre,
+            },
+            fechaCreacion: result.recordset[0].fechaCreacion,
+            usuarioEmail: result.recordset[0].Usuario_email,
+        };
+
+        const propietario = {
+            rut: result.recordset[0].propietarioRut,
+            nombres: result.recordset[0].propietarioNombres,
+            apellidos: result.recordset[0].propietarioApellidos,
+            email: result.recordset[0].propietarioEmail,
+            telefono: result.recordset[0].propietarioTelefono,
+        };
+
+        const propiedad = {
+            rolSII: result.recordset[0].propiedadRolSII,
+            direccion: result.recordset[0].propiedadDireccion,
+            numero: result.recordset[0].propiedadNumero,
+            comuna: result.recordset[0].propiedadComuna,
+            region: result.recordset[0].propiedadRegion,
+            inscFojas: result.recordset[0].propiedadInscFojas,
+            inscNumero: result.recordset[0].propiedadInscNumero,
+            inscYear: result.recordset[0].propiedadInscYear,
+            numPisos: result.recordset[0].propiedadNumPisos,
+            m2: result.recordset[0].propiedadM2,
+            destino: result.recordset[0].propiedadDestino,
+        };
+
+        res.status(200).json({ expediente, propietario, propiedad });
     } catch (error) {
         console.error('Error al obtener el detalle del expediente:', error);
         res.status(500).json({ error: 'Error al obtener el detalle del expediente.' });
     }
 });
 
+
 // Crear un nuevo expediente con propietario y propiedad asociada
 router.post('/', async (req, res) => {
-    // const { descripcion, tipo, subtipo, propietario, propiedad, usuarioRut } = req.body;
     const { descripcion, tipo, subtipo, propietario, propiedad, usuarioEmail } = req.body;
 
     if (!descripcion || !tipo || !subtipo || !propietario || !usuarioEmail || !propiedad) {

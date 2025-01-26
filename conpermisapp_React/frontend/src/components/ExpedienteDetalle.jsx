@@ -37,15 +37,15 @@
 //     //         const url = propiedad
 //     //             ? `http://localhost:4000/propiedades/${propiedad.id}` // Actualización
 //     //             : `http://localhost:4000/propiedades`; // Creación
-    
+
 //     //         console.log("URL para guardar propiedad:", url);
-    
+
 //     //         const response = await fetch(url, {
 //     //             method: propiedad ? "PUT" : "POST",
 //     //             headers: { "Content-Type": "application/json" },
 //     //             body: JSON.stringify({ ...nuevaPropiedad, expedienteId: expediente.expedienteId }),
 //     //         });
-    
+
 //     //         if (response.ok) {
 //     //             const data = await response.json();
 //     //             setPropiedad(data); 
@@ -106,16 +106,16 @@
 
 
 
-            // <Desplegable title="Formulario 1: Información adicional">
-            //     {/* <Formulario1 /> */}
-            //     <p>Aquí va el contenido del formulario 1...</p>
-            // </Desplegable>
-            // <Desplegable title="Formulario 2: Documentación requerida">
-            //     <p>Aquí va el contenido del formulario 2...</p>
-            // </Desplegable>
-            // <Desplegable title="Formulario 3: Carga de Ocupación">
-            //     <CargaOcupacion />
-            // </Desplegable>
+// <Desplegable title="Formulario 1: Información adicional">
+//     {/* <Formulario1 /> */}
+//     <p>Aquí va el contenido del formulario 1...</p>
+// </Desplegable>
+// <Desplegable title="Formulario 2: Documentación requerida">
+//     <p>Aquí va el contenido del formulario 2...</p>
+// </Desplegable>
+// <Desplegable title="Formulario 3: Carga de Ocupación">
+//     <CargaOcupacion />
+// </Desplegable>
 //             <Desplegable title="Formulario 4: Solicitud Art. 124° LGUC ">
 //                 <SolicitudArt124 expedienteId={id} />
 //             </Desplegable>
@@ -129,17 +129,17 @@
 //     );
 
 //     // return (
-        // <div style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
-        //     <h1>Detalle del Expediente</h1>
-        //     <p><strong>ID:</strong> {expediente.id}</p>
-        //     <p><strong>Descripción:</strong> {expediente.descripcion}</p>
-        //     <p><strong>Propietario:</strong> {propietario?.nombres} {propietario?.apellidos}</p>
-        //     <p><strong>Dirección de la Propiedad:</strong> {propiedad?.direccion} {propiedad?.numero}</p>
-        //     <p><strong>Arquitecto:</strong> {usuario?.nombres} {usuario?.apellidos}</p>
-        //     <p><strong>Tipo de Expediente:</strong> {tipoExpediente?.nombre}</p>
-        //     <p><strong>Subtipo de Expediente:</strong> {subTipoExpediente?.nombre}</p>
-        //     <button onClick={() => navigate("/dashboard")}>Volver</button>
-        // </div>
+// <div style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
+//     <h1>Detalle del Expediente</h1>
+//     <p><strong>ID:</strong> {expediente.id}</p>
+//     <p><strong>Descripción:</strong> {expediente.descripcion}</p>
+//     <p><strong>Propietario:</strong> {propietario?.nombres} {propietario?.apellidos}</p>
+//     <p><strong>Dirección de la Propiedad:</strong> {propiedad?.direccion} {propiedad?.numero}</p>
+//     <p><strong>Arquitecto:</strong> {usuario?.nombres} {usuario?.apellidos}</p>
+//     <p><strong>Tipo de Expediente:</strong> {tipoExpediente?.nombre}</p>
+//     <p><strong>Subtipo de Expediente:</strong> {subTipoExpediente?.nombre}</p>
+//     <button onClick={() => navigate("/dashboard")}>Volver</button>
+// </div>
 //     // );
 
 // };
@@ -163,7 +163,7 @@ const ExpedienteDetalle = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [propiedad, setPropiedad] = useState(null);
-    const [propietario, setPropietario] =useState(null);
+    const [propietario, setPropietario] = useState(null);
     const [error, setError] = useState(null);
 
     // // Fetch de los datos de la propiedad y propietario
@@ -198,27 +198,27 @@ const ExpedienteDetalle = () => {
         const fetchDatos = async () => {
             try {
                 // Fetch propiedad y expediente en una sola llamada 
-                const response = await fetch(`http://localhost:4000/propiedades/expedientes/${id}/detalle`);
+                const response = await fetch(`http://localhost:4000/expedientes/${id}/detalle`);
                 if (!response.ok) throw new Error("No se pudieron cargar los datos del expediente.");
                 const data = await response.json();
-    
+
                 console.log("Datos del expediente recibidos:", data);
-    
+
                 // Establecer datos de propiedad y expediente
                 setPropiedad(data.propiedad);
-    
+
                 // Validar si el expediente tiene un propietario asociado
                 if (data.expediente && data.expediente.propietarioRut) {
                     console.log("RUT para el fetch del propietario:", data.expediente.propietarioRut);
-    
+
                     // Fetch del propietario
                     const propietarioResponse = await fetch(`http://localhost:4000/propietarios?rut=${data.expediente.propietarioRut}`);
                     if (!propietarioResponse.ok) {
                         throw new Error(`Error al obtener los datos del propietario con RUT ${data.expediente.propietarioRut}`);
                     }
-    
+
                     const propietarioData = await propietarioResponse.json();
-    
+
                     if (Array.isArray(propietarioData) && propietarioData.length > 0) {
                         setPropietario(propietarioData[0]);
                     } else {
@@ -233,7 +233,7 @@ const ExpedienteDetalle = () => {
                 setError(err.message);
             }
         };
-    
+
         if (id) fetchDatos();
     }, [id]);
 
@@ -287,9 +287,9 @@ const ExpedienteDetalle = () => {
     // );
 
     return (
-        
+
         <div style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
-            
+
             <h1>Detalles del Expediente</h1>
             {error ? (
                 <p style={{ color: "red" }}>{error}</p>
@@ -297,9 +297,9 @@ const ExpedienteDetalle = () => {
                 <>
                     <Desplegable title="Datos de la Propiedad">
                         {propiedad ? (
-                            <DatosPropiedad 
-                                propiedad={propiedad} 
-                                onSave={handleSavePropiedad} 
+                            <DatosPropiedad
+                                propiedad={propiedad}
+                                onSave={handleSavePropiedad}
                             />
                         ) : (
                             <p>No se encontraron datos de la propiedad.</p>
@@ -308,9 +308,9 @@ const ExpedienteDetalle = () => {
 
                     <Desplegable title="Datos del Propietario">
                         {propietario ? (
-                            <DatosPropietario 
-                                propietario={propietario} 
-                                onSave={handleSavePropietario} 
+                            <DatosPropietario
+                                propietario={propietario}
+                                onSave={handleSavePropietario}
                             />
                         ) : (
                             <p>No se encontraron datos del propietario.</p>
@@ -328,8 +328,8 @@ const ExpedienteDetalle = () => {
                         <CargaOcupacion />
                     </Desplegable>
                     <Desplegable title="Formulario 4: Solicitud Art. 124° LGUC ">
-//                 <SolicitudArt124 expedienteId={id} />
-//             </Desplegable>
+                        <SolicitudArt124 expedienteId={id} />
+                    </Desplegable>
 
                 </>
             )}

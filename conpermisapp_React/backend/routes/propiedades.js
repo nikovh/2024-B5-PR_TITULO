@@ -177,65 +177,66 @@ router.get('/', async (req, res) => {
     }
 });
 
-// obtener el expediente asociado a una propiedad especifica
-router.get('/expedientes/:id/detalle', async (req, res) => {
-    const { id } = req.params;
+// NO CONSIDERAR PORQUE ESTÁ EN EXPEDIENTE COMO: router.get('/:id/detalle', async (req, res) => {
+// // obtener el expediente asociado a una propiedad especifica
+// router.get('/expedientes/:id/detalle', async (req, res) => {
+//     const { id } = req.params;
 
-    try {
-        const pool = await getConnection();
+//     try {
+//         const pool = await getConnection();
 
-        // Obtener datos del expediente
-        const expedienteQuery = await pool.request()
-            .input('id', sql.Int, id)
-            .query(`
-                SELECT 
-                    e.id, 
-                    e.descripcion, 
-                    e.tipo, 
-                    e.subtipo, 
-                    e.fechaCreacion AS fechaCreacion, 
-                    p.rut AS propietarioRut, 
-                    p.nombres AS propietarioNombres, 
-                    p.apellidos AS propietarioApellidos 
-                FROM Expedientes e
-                INNER JOIN Propietario p ON e.propietario_rut = p.rut
-                WHERE e.id = @id
-            `);
+//         // Obtener datos del expediente
+//         const expedienteQuery = await pool.request()
+//             .input('id', sql.Int, id)
+//             .query(`
+//                 SELECT 
+//                     e.id, 
+//                     e.descripcion, 
+//                     e.tipo, 
+//                     e.subtipo, 
+//                     e.fechaCreacion AS fechaCreacion, 
+//                     p.rut AS propietarioRut, 
+//                     p.nombres AS propietarioNombres, 
+//                     p.apellidos AS propietarioApellidos 
+//                 FROM Expedientes e
+//                 INNER JOIN Propietario p ON e.propietario_rut = p.rut
+//                 WHERE e.id = @id
+//             `);
 
-        if (expedienteQuery.recordset.length === 0) {
-            return res.status(404).json({ error: 'Expediente no encontrado.' });
-        }
+//         if (expedienteQuery.recordset.length === 0) {
+//             return res.status(404).json({ error: 'Expediente no encontrado.' });
+//         }
 
-        const expediente = expedienteQuery.recordset[0];
+//         const expediente = expedienteQuery.recordset[0];
 
-        // Obtener datos de la propiedad asociada
-        const propiedadQuery = await pool.request()
-            .input('expedienteId', sql.Int, id)
-            .query(`
-                SELECT 
-                    rolSII, 
-                    direccion, 
-                    numero, 
-                    comuna, 
-                    region, 
-                    inscFojas, 
-                    inscNumero, 
-                    inscYear, 
-                    numPisos, 
-                    m2, 
-                    destino 
-                FROM Propiedad
-                WHERE expediente_id = @expedienteId
-            `);
+//         // Obtener datos de la propiedad asociada
+//         const propiedadQuery = await pool.request()
+//             .input('expedienteId', sql.Int, id)
+//             .query(`
+//                 SELECT 
+//                     rolSII, 
+//                     direccion, 
+//                     numero, 
+//                     comuna, 
+//                     region, 
+//                     inscFojas, 
+//                     inscNumero, 
+//                     inscYear, 
+//                     numPisos, 
+//                     m2, 
+//                     destino 
+//                 FROM Propiedad
+//                 WHERE expediente_id = @expedienteId
+//             `);
 
-        const propiedad = propiedadQuery.recordset[0] || null;
+//         const propiedad = propiedadQuery.recordset[0] || null;
 
-        res.status(200).json({ expediente, propiedad });
-    } catch (err) {
-        console.error('Error al obtener los datos del expediente:', err);
-        res.status(500).json({ error: 'Error al obtener los datos del expediente.' });
-    }
-});
+//         res.status(200).json({ expediente, propiedad });
+//     } catch (err) {
+//         console.error('Error al obtener los datos del expediente:', err);
+//         res.status(500).json({ error: 'Error al obtener los datos del expediente.' });
+//     }
+// });
 
 
 // Crear una nueva propiedad
