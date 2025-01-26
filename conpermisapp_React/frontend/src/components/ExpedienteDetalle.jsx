@@ -144,8 +144,11 @@
 
 // };
 
-//op2
 // export default ExpedienteDetalle;
+
+
+
+//op2
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Desplegable from "./FormPage/Desplegable";
@@ -159,24 +162,46 @@ const ExpedienteDetalle = () => {
     const [propietario, setPropietario] =useState(null);
     const [error, setError] = useState(null);
 
-    // Fetch de los datos de la propiedad y propietario
+    // // Fetch de los datos de la propiedad y propietario
+    // useEffect(() => {
+    //     const fetchDatos = async () => {
+    //         try {
+    //             // Fetch propiedad
+    //             const propiedadResponse = await fetch(`http://localhost:4000/propiedades/expedientes/${id}`);
+    //             if (!propiedadResponse.ok) throw new Error("No se pudieron cargar los datos de la propiedad.");              
+    //             const propiedadData = await propiedadResponse.json();
+    //             setPropiedad(propiedadData);
+
+    //             // Fetch propietario
+    //             const propietarioResponse = await fetch(`http://localhost:4000/propietarios/${propiedadData.propietarioRut}`);
+    //             if (!propietarioResponse.ok) throw new Error("No se pudieron cargar los datos del propietario.");
+    //             const propietarios = await propietarioResponse.json();
+    //             const propietarioEncontrado = propietarios.find(p => p.rut === propiedadData.propietarioRut);
+    //             if (!propietarioEncontrado) throw new Error("Propietario no encontrado.");
+    //             setPropietario(propietarioEncontrado);
+
+    //         } catch (err) {
+    //             console.error("Error al obtener los datos:", err);
+    //             setError(err.message);
+    //         }
+    //     };
+
+    //     if (id) fetchDatos();
+    // }, [id]);
+
+    // fetch propiedad y propietario en un solo llamado
     useEffect(() => {
         const fetchDatos = async () => {
             try {
-                // Fetch propiedad
-                const propiedadResponse = await fetch(`http://localhost:4000/propiedades/expedientes/${id}`);
-                if (!propiedadResponse.ok) throw new Error("No se pudieron cargar los datos de la propiedad.");              
-                const propiedadData = await propiedadResponse.json();
-                setPropiedad(propiedadData);
+                // Fetch propiedad y propietario en una sola llamada 
+                const response = await fetch(`http://localhost:4000/propiedades/expedientes/${id}/detalle`);
+                if (!response.ok) throw new Error("No se pudieron cargar los datos del expediente.");
+                const data = await response.json();
+                
+                if (!data.propiedad || !data.propietario) throw new Error("Datos incompletos del expediente.");
 
-                // Fetch propietario
-                const propietarioResponse = await fetch(`http://localhost:4000/propietarios/${propiedadData.propietarioRut}`);
-                if (!propietarioResponse.ok) throw new Error("No se pudieron cargar los datos del propietario.");
-                const propietarios = await propietarioResponse.json();
-                const propietarioEncontrado = propietarios.find(p => p.rut === propiedadData.propietarioRut);
-                if (!propietarioEncontrado) throw new Error("Propietario no encontrado.");
-                setPropietario(propietarioEncontrado);
-
+                setPropiedad(data.propiedad);
+                setPropietario(data.propietario);
             } catch (err) {
                 console.error("Error al obtener los datos:", err);
                 setError(err.message);
@@ -200,6 +225,41 @@ const ExpedienteDetalle = () => {
         navigate("/dashboard");
     };
 
+    // return (
+    //     <div style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
+    //         <h1>Detalles del Expediente</h1>
+    //         {error ? (
+    //             <p style={{ color: "red" }}>{error}</p>
+    //         ) : (
+    //             <>
+    //                 <Desplegable title="Datos de la Propiedad">
+    //                     {propiedad ? (
+    //                         <DatosPropiedad 
+    //                             propiedad={propiedad} 
+    //                             onSave={handleSavePropiedad} 
+    //                         />
+    //                     ) : (
+    //                         <p>Cargando datos de la propiedad...</p>
+    //                     )}
+    //                 </Desplegable>
+
+    //                 <Desplegable title="Datos del Propietario">
+    //                     {propietario ? (
+    //                         <DatosPropietario 
+    //                             propietario={propietario} 
+    //                             onSave={handleSavePropietario} 
+    //                         />
+    //                     ) : (
+    //                         <p>Cargando datos del propietario...</p>
+    //                     )}
+    //                 </Desplegable>
+    //             </>
+    //         )}
+
+    //         <button onClick={handleCancel} style={{ marginTop: "20px" }}>Volver</button>
+    //     </div>
+    // );
+
     return (
         <div style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
             <h1>Detalles del Expediente</h1>
@@ -214,7 +274,7 @@ const ExpedienteDetalle = () => {
                                 onSave={handleSavePropiedad} 
                             />
                         ) : (
-                            <p>Cargando datos de la propiedad...</p>
+                            <p>No se encontraron datos de la propiedad.</p>
                         )}
                     </Desplegable>
 
@@ -225,7 +285,7 @@ const ExpedienteDetalle = () => {
                                 onSave={handleSavePropietario} 
                             />
                         ) : (
-                            <p>Cargando datos del propietario...</p>
+                            <p>No se encontraron datos del propietario.</p>
                         )}
                     </Desplegable>
                 </>

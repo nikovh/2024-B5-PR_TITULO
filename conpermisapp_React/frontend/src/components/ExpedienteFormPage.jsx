@@ -11,7 +11,7 @@ function ExpedienteFormPage() {
 
     // estados
     const [descripcion, setDescripcion] = useState("");
-    const [errores, setErrores] = useState({ descripcion: "" });
+    const [errores, setErrores] = useState({});
     const [tipo, setTipo] = useState("");
     const [subtipo, setSubtipo] = useState("");
     const [tipoNombre, setTipoNombre] = useState("");
@@ -24,7 +24,10 @@ function ExpedienteFormPage() {
     const [esNuevoPropietario, setEsNuevoPropietario] = useState(false);
 
     const [propiedad, setPropiedad] = useState(null);
-    const [isEditingPropiedad, setIsEditingPropiedad] = useState(false);
+    const [propiedadesList, setPropiedadesList] = useState([]);
+    const [propiedadSeleccionada, setPropiedadSeleccionada] = useState("");
+    const [esNuevaPropiedad, setEsNuevaPropiedad] = useState(false);
+
 
     // validacion descripcion
     const validarDescripcion = (desc) => {
@@ -38,39 +41,68 @@ function ExpedienteFormPage() {
         setTipo(tipoParam);
         setSubtipo(subtipoParam);
 
-        // Cargar nombres de tipo y subtipo
-        const fetchNombres = async () => {
-            try {
-                // Fetch tipos
-                const tipoResponse = await fetch(`http://localhost:4000/expedientes/tipo-expediente`);
-                const tipos = await tipoResponse.json();
-                const tipoEncontrado = tipos.find(t => String(t.id) === tipoParam);
+    //     // Cargar nombres de tipo y subtipo
+    //     const fetchNombres = async () => {
+    //         try {
+    //             // Fetch tipos
+    //             const tipoResponse = await fetch(`http://localhost:4000/expedientes/tipo-expediente`);
+    //             const tipos = await tipoResponse.json();
+    //             const tipoEncontrado = tipos.find(t => String(t.id) === tipoParam);
 
-                // Fetch subtipos
-                const subtipoResponse = await fetch(`http://localhost:4000/expedientes/subtipo-expediente`);
-                const subtipos = await subtipoResponse.json();
-                const subtipoEncontrado = subtipos.find(st => String(st.id) === subtipoParam);
+    //             // Fetch subtipos
+    //             const subtipoResponse = await fetch(`http://localhost:4000/expedientes/subtipo-expediente`);
+    //             const subtipos = await subtipoResponse.json();
+    //             const subtipoEncontrado = subtipos.find(st => String(st.id) === subtipoParam);
+
+    //             setTipoNombre(tipoEncontrado?.nombre || "Desconocido");
+    //             setSubtipoNombre(subtipoEncontrado?.nombre || "Desconocido");
+    //         } catch (err) {
+    //             console.error("Error al obtener tipo y subtipo:", err);
+    //         }
+    //     };
+
+    //     const fetchPropietarios = async () => {
+    //         try {
+    //             const response = await fetch("http://localhost:4000/propietarios");
+    //             const propietarios = await response.json();
+    //             setPropietariosList(propietarios);
+    //             console.log("Propietarios cargados:", propietarios);
+    //         } catch (err) {
+    //             console.error("Error al cargar propietarios:", err);
+    //         }
+    //     };
+
+    //     fetchNombres();
+    //     fetchPropietarios();
+    // }, [searchParams]);
+
+        const fetchDatosIniciales = async () => {
+            try {
+                const [tiposRes, subtiposRes, propietariosRes, propiedadesRes] = await Promise.all([
+                    fetch("http://localhost:4000/expedientes/tipo-expediente"),
+                    fetch("http://localhost:4000/expedientes/subtipo-expediente"),
+                    fetch("http://localhost:4000/propietarios"),
+                    fetch("http://localhost:4000/propiedades")
+                ]);
+
+                const tipos = await tiposRes.json();
+                const subtipos = await subtiposRes.json();
+                const propietarios = await propietariosRes.json();
+                const propiedades = await propiedadesRes.json();
+
+                const tipoEncontrado = tipos.find((t) => String(t.id) === tipoParam);
+                const subtipoEncontrado = subtipos.find((st) => String(st.id) === subtipoParam);
 
                 setTipoNombre(tipoEncontrado?.nombre || "Desconocido");
                 setSubtipoNombre(subtipoEncontrado?.nombre || "Desconocido");
-            } catch (err) {
-                console.error("Error al obtener tipo y subtipo:", err);
-            }
-        };
-
-        const fetchPropietarios = async () => {
-            try {
-                const response = await fetch("http://localhost:4000/propietarios");
-                const propietarios = await response.json();
                 setPropietariosList(propietarios);
-                console.log("Propietarios cargados:", propietarios);
+                setPropiedadesList(propiedades);
             } catch (err) {
-                console.error("Error al cargar propietarios:", err);
+                console.error("Error al cargar datos iniciales:", err);
             }
         };
 
-        fetchNombres();
-        fetchPropietarios();
+        fetchDatosIniciales();
     }, [searchParams]);
 
     // manejar la seleccion de propietario
@@ -84,36 +116,84 @@ function ExpedienteFormPage() {
                 nombres: "", 
                 apellidos: "", 
                 email: "", 
-                telefono: "", 
-                // datosValidos: false, 
+                telefono: "",  
             });
         } else {
             setEsNuevoPropietario(false);
 
             const propietarioExistente = propietariosList.find((p) => p.rut === rut);
             if (propietarioExistente) {
-                setPropietario({ ...propietarioExistente
-                    //, datosValidos: true 
-                });
+                setPropietario(propietarioExistente);
                 console.log("Propietario seleccionado", propietarioExistente);
             }
         }
     };
 
-    const handlePropietarioUpdate = (updatedPropietario) => {
-        setPropietario(updatedPropietario); // Actualizar el estado con los datos del componente hijo
+    // const handlePropietarioUpdate = (updatedPropietario) => {
+    //     setPropietario(updatedPropietario); // Actualizar el estado con los datos del componente hijo
+    // };
+
+    // manejar la seleccion de propiedad
+    const handlePropiedadSeleccionada = (rolSII) => {
+        setPropiedadSeleccionada(rolSII);
+
+        if (rolSII === "nueva") {
+            setEsNuevaPropiedad(true);
+            setPropiedad({
+                rolSII: "",
+                direccion: "",
+                numero: 0, //evitar null
+                comuna: "",
+                region: "",
+                inscFojas: "",
+                inscNumero: "",
+                inscYear: "",
+                numPisos: "",
+                m2: "",
+                destino: "",
+            });
+        } else {
+            setEsNuevaPropiedad(false);
+            const propiedadExistente = propiedadesList.find((p) => p.rolSII === rolSII);
+            if (propiedadExistente) {
+                setPropiedad(propiedadExistente);
+            }
+        }
+    };
+
+    const handleSavePropiedad = (updatedPropiedad) => {
+        console.log("Datos actualizados en el formulario de Propiedad:", updatedPropiedad);
+        setPropiedad(updatedPropiedad); // Actualiza el estado
     };
 
 
-
     const handleSubmit = async () => {
+        console.log("Datos finales enviados al backend:", {
+            descripcion,
+            tipo,
+            subtipo,
+            propietario,
+            propiedad,
+            usuarioEmail: auth.currentUser?.email,
+        });
+
+        const nuevosErrores = {};
+        if (!descripcion.trim()) nuevosErrores.descripcion = "La descripción es obligatoria.";
+        if (!propietario) nuevosErrores.propietario = "Debes seleccionar un propietario.";
+        if (!propiedad) nuevosErrores.propiedad = "Debes seleccionar una propiedad.";
+
+        if (Object.keys(nuevosErrores).length > 0) {
+            setErrores(nuevosErrores);
+            return;
+        }
+
         try {
             const datosEnviados = {
                 descripcion,
                 tipo,
                 subtipo,
                 propietario,
-                propiedad,
+                propiedad, 
                 usuarioEmail: auth.currentUser?.email,
             };
 
@@ -135,9 +215,6 @@ function ExpedienteFormPage() {
         }
     };
 
-
-
-
     const handleCancel = () => navigate("/dashboard");
 
     return (
@@ -152,12 +229,10 @@ function ExpedienteFormPage() {
                     value={descripcion}
                     onChange={(e) => {
                         setDescripcion(e.target.value);
-                        setErrores({ descripcion: validarDescripcion(e.target.value) });
+                        setErrores({ ...errores, descripcion: validarDescripcion(e.target.value) });
                     }}
                 />
-                {errores.descripcion && (
-                    <p style={{ color: "red", fontSize: "12px" }}>{errores.descripcion}</p>
-                )}
+                {errores.descripcion && (<p style={{ color: "red" }}>{errores.descripcion}</p>)}
             </div>
 
             {/* Datos del Propietario */}
@@ -181,7 +256,16 @@ function ExpedienteFormPage() {
 
             {/* Datos de la Propiedad */}
             <Desplegable title="Datos de la Propiedad">
-                <DatosPropiedad propiedad={propiedad} onSave={setPropiedad} />
+                <label>Seleccionar Propiedad:</label>
+                <select value={propiedadSeleccionada} onChange={(e) => handlePropiedadSeleccionada(e.target.value)}>
+                    <option value="">Seleccione una propiedad</option>
+                    {propiedadesList.map((p) => (
+                        <option key={p.rolSII} value={p.rolSII}>{p.rolSII} - {p.direccion}</option>
+                    ))}
+                    <option value="nueva">Crear nueva propiedad</option>
+                </select>
+
+                {esNuevaPropiedad && <DatosPropiedad propiedad={propiedad} onSave={setPropiedad} />}
             </Desplegable>
 
             {/* Botones */}

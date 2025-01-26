@@ -194,7 +194,7 @@ router.post('/', async (req, res) => {
         expedienteId
     } = req.body;
 
-    if (!rolSII || !direccion || !comuna || !region) {
+    if (!rolSII || !direccion || !numero || !comuna || !region) {
         return res.status(400).json({ error: 'Campos obligatorios faltantes.' });
     }
 
@@ -204,7 +204,7 @@ router.post('/', async (req, res) => {
         const result = await pool.request()
             .input('rolSII', sql.VarChar, rolSII)
             .input('direccion', sql.VarChar, direccion)
-            .input('numero', sql.Int, numero || null)
+            .input('numero', sql.Int, numero)
             .input('comuna', sql.VarChar, comuna)
             .input('region', sql.VarChar, region)
             .input('inscFojas', sql.VarChar, inscFojas || null)

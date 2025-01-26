@@ -103,9 +103,10 @@ router.get('/:id/detalle', async (req, res) => {
 
 // Crear un nuevo expediente con propietario y propiedad asociada
 router.post('/', async (req, res) => {
-    const { descripcion, tipo, subtipo, propietario, propiedad, usuarioRut } = req.body;
+    // const { descripcion, tipo, subtipo, propietario, propiedad, usuarioRut } = req.body;
+    const { descripcion, tipo, subtipo, propietario, propiedad, usuarioEmail } = req.body;
 
-    if (!descripcion || !tipo || !subtipo || !propietario) {
+    if (!descripcion || !tipo || !subtipo || !propietario || !usuarioEmail || !propiedad) {
         return res.status(400).json({ error: 'Faltan campos obligatorios.' });
     }
 
@@ -124,7 +125,13 @@ router.post('/', async (req, res) => {
                 await transaction.request()
                     .input('rut', sql.VarChar, propietario.rut)
                     .input('nombres', sql.VarChar, propietario.nombres)
-                    .query(`INSERT INTO Propietario (rut, nombres) VALUES (@rut, @nombres)`);
+                    .input('apellidos', sql.VarChar, propietario.apellidos)
+                    .input('email', sql.VarChar, propietario.email)
+                    .input('telefono', sql.VarChar, propietario.telefono)
+                    .query(`
+                        INSERT INTO Propietario (rut, nombres, apellidos, email, telefono)
+                        VALUES (@rut, @nombres, @apellidos, @email, @telefono)
+                    `);
             }
 
             // Crear expediente
@@ -133,23 +140,39 @@ router.post('/', async (req, res) => {
                 .input('tipo', sql.VarChar, tipo)
                 .input('subtipo', sql.VarChar, subtipo)
                 .input('propietarioRut', sql.VarChar, propietario.rut)
+                .input('usuarioEmail', sql.VarChar, usuarioEmail)
                 .query(`
-                    INSERT INTO Expedientes (descripcion, tipo, subtipo, propietario_rut)
+                    INSERT INTO Expedientes (descripcion, tipo, subtipo, propietario_rut, usuario_email)
                     OUTPUT INSERTED.id
-                    VALUES (@descripcion, @tipo, @subtipo, @propietarioRut)
+                    VALUES (@descripcion, @tipo, @subtipo, @propietarioRut, @usuarioEmail)
                 `);
 
             const expedienteId = expedienteResult.recordset[0].id;
 
-            // Crear propiedad asociada (si aplica)
+            // Crear propiedad asociada
             if (propiedad) {
                 await transaction.request()
                     .input('rolSII', sql.VarChar, propiedad.rolSII)
                     .input('direccion', sql.VarChar, propiedad.direccion)
+                    .input('numero', sql.Int, propiedad.numero)
+                    .input('comuna', sql.VarChar, propiedad.comuna)
+                    .input('region', sql.VarChar, propiedad.region)
+                    .input('inscFojas', sql.VarChar, propiedad.inscFojas)
+                    .input('inscNumero', sql.VarChar, propiedad.inscNumero)
+                    .input('inscYear', sql.Int, propiedad.inscYear)
+                    .input('numPisos', sql.Int, propiedad.numPisos)
+                    .input('m2', sql.Float, propiedad.m2)
+                    .input('destino', sql.VarChar, propiedad.destino)
                     .input('expedienteId', sql.Int, expedienteId)
                     .query(`
-                        INSERT INTO Propiedad (rolSII, direccion, expediente_id)
-                        VALUES (@rolSII, @direccion, @expedienteId)
+                        INSERT INTO Propiedad (
+                            rolSII, direccion, numero, comuna, region, 
+                            inscFojas, inscNumero, inscYear, numPisos, m2, destino, expediente_id
+                        )
+                        VALUES (
+                            @rolSII, @direccion, @numero, @comuna, @region, 
+                            @inscFojas, @inscNumero, @inscYear, @numPisos, @m2, @destino, @expedienteId
+                        )
                     `);
             }
 
