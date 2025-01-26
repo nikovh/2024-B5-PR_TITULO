@@ -106,16 +106,16 @@
 
 
 
-//             <Desplegable title="Formulario 1: Información adicional">
-//                 {/* <Formulario1 /> */}
-//                 <p>Aquí va el contenido del formulario 1...</p>
-//             </Desplegable>
-//             <Desplegable title="Formulario 2: Documentación requerida">
-//                 <p>Aquí va el contenido del formulario 2...</p>
-//             </Desplegable>
-//             <Desplegable title="Formulario 3: Carga de Ocupación">
-//                 <CargaOcupacion />
-//             </Desplegable>
+            // <Desplegable title="Formulario 1: Información adicional">
+            //     {/* <Formulario1 /> */}
+            //     <p>Aquí va el contenido del formulario 1...</p>
+            // </Desplegable>
+            // <Desplegable title="Formulario 2: Documentación requerida">
+            //     <p>Aquí va el contenido del formulario 2...</p>
+            // </Desplegable>
+            // <Desplegable title="Formulario 3: Carga de Ocupación">
+            //     <CargaOcupacion />
+            // </Desplegable>
 //             <Desplegable title="Formulario 4: Solicitud Art. 124° LGUC ">
 //                 <SolicitudArt124 expedienteId={id} />
 //             </Desplegable>
@@ -151,9 +151,13 @@
 //op2
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+
 import Desplegable from "./FormPage/Desplegable";
 import DatosPropiedad from "./FormPage/DatosPropiedad";
 import DatosPropietario from "./FormPage/DatosPropietario";
+
+import CargaOcupacion from "./Formularios/CargaOcupacion"
+import SolicitudArt124 from "./Formularios/SolicitudArt124"
 
 const ExpedienteDetalle = () => {
     const { id } = useParams();
@@ -312,6 +316,21 @@ const ExpedienteDetalle = () => {
                             <p>No se encontraron datos del propietario.</p>
                         )}
                     </Desplegable>
+
+                    <Desplegable title="Formulario 1: Información adicional">
+                        {/* <Formulario1 /> */}
+                        <p>Aquí va el contenido del formulario 1...</p>
+                    </Desplegable>
+                    <Desplegable title="Formulario 2: Documentación requerida">
+                        <p>Aquí va el contenido del formulario 2...</p>
+                    </Desplegable>
+                    <Desplegable title="Formulario 3: Carga de Ocupación">
+                        <CargaOcupacion />
+                    </Desplegable>
+                    <Desplegable title="Formulario 4: Solicitud Art. 124° LGUC ">
+//                 <SolicitudArt124 expedienteId={id} />
+//             </Desplegable>
+
                 </>
             )}
 
