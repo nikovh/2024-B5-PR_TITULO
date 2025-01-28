@@ -23,11 +23,19 @@ function ExpedienteFormPage() {
     const [propietarioSeleccionado, setPropietarioSeleccionado] = useState("");
     const [esNuevoPropietario, setEsNuevoPropietario] = useState(false);
 
-    const [propiedad, setPropiedad] = useState(null);
-    const [propiedadesList, setPropiedadesList] = useState([]);
-    const [propiedadSeleccionada, setPropiedadSeleccionada] = useState("");
-    const [esNuevaPropiedad, setEsNuevaPropiedad] = useState(false);
-
+    const [propiedad, setPropiedad] = useState({
+        rolSII: "",
+        direccion: "",
+        numero: 0,
+        comuna: "",
+        region: "",
+        inscFojas: "",
+        inscNumero: "",
+        inscYear: "",
+        numPisos: "",
+        m2: "",
+        destino: "",
+    });
 
     // validacion descripcion
     const validarDescripcion = (desc) => {
@@ -41,54 +49,17 @@ function ExpedienteFormPage() {
         setTipo(tipoParam);
         setSubtipo(subtipoParam);
 
-    //     // Cargar nombres de tipo y subtipo
-    //     const fetchNombres = async () => {
-    //         try {
-    //             // Fetch tipos
-    //             const tipoResponse = await fetch(`http://localhost:4000/expedientes/tipo-expediente`);
-    //             const tipos = await tipoResponse.json();
-    //             const tipoEncontrado = tipos.find(t => String(t.id) === tipoParam);
-
-    //             // Fetch subtipos
-    //             const subtipoResponse = await fetch(`http://localhost:4000/expedientes/subtipo-expediente`);
-    //             const subtipos = await subtipoResponse.json();
-    //             const subtipoEncontrado = subtipos.find(st => String(st.id) === subtipoParam);
-
-    //             setTipoNombre(tipoEncontrado?.nombre || "Desconocido");
-    //             setSubtipoNombre(subtipoEncontrado?.nombre || "Desconocido");
-    //         } catch (err) {
-    //             console.error("Error al obtener tipo y subtipo:", err);
-    //         }
-    //     };
-
-    //     const fetchPropietarios = async () => {
-    //         try {
-    //             const response = await fetch("http://localhost:4000/propietarios");
-    //             const propietarios = await response.json();
-    //             setPropietariosList(propietarios);
-    //             console.log("Propietarios cargados:", propietarios);
-    //         } catch (err) {
-    //             console.error("Error al cargar propietarios:", err);
-    //         }
-    //     };
-
-    //     fetchNombres();
-    //     fetchPropietarios();
-    // }, [searchParams]);
-
         const fetchDatosIniciales = async () => {
             try {
-                const [tiposRes, subtiposRes, propietariosRes, propiedadesRes] = await Promise.all([
+                const [tiposRes, subtiposRes, propietariosRes] = await Promise.all([
                     fetch("http://localhost:4000/expedientes/tipo-expediente"),
                     fetch("http://localhost:4000/expedientes/subtipo-expediente"),
                     fetch("http://localhost:4000/propietarios"),
-                    fetch("http://localhost:4000/propiedades")
                 ]);
 
                 const tipos = await tiposRes.json();
                 const subtipos = await subtiposRes.json();
                 const propietarios = await propietariosRes.json();
-                const propiedades = await propiedadesRes.json();
 
                 const tipoEncontrado = tipos.find((t) => String(t.id) === tipoParam);
                 const subtipoEncontrado = subtipos.find((st) => String(st.id) === subtipoParam);
@@ -96,7 +67,6 @@ function ExpedienteFormPage() {
                 setTipoNombre(tipoEncontrado?.nombre || "Desconocido");
                 setSubtipoNombre(subtipoEncontrado?.nombre || "Desconocido");
                 setPropietariosList(propietarios);
-                setPropiedadesList(propiedades);
             } catch (err) {
                 console.error("Error al cargar datos iniciales:", err);
             }
@@ -129,44 +99,6 @@ function ExpedienteFormPage() {
         }
     };
 
-    // const handlePropietarioUpdate = (updatedPropietario) => {
-    //     setPropietario(updatedPropietario); // Actualizar el estado con los datos del componente hijo
-    // };
-
-    // manejar la seleccion de propiedad
-    const handlePropiedadSeleccionada = (rolSII) => {
-        setPropiedadSeleccionada(rolSII);
-
-        if (rolSII === "nueva") {
-            setEsNuevaPropiedad(true);
-            setPropiedad({
-                rolSII: "",
-                direccion: "",
-                numero: 0, //evitar null
-                comuna: "",
-                region: "",
-                inscFojas: "",
-                inscNumero: "",
-                inscYear: "",
-                numPisos: "",
-                m2: "",
-                destino: "",
-            });
-        } else {
-            setEsNuevaPropiedad(false);
-            const propiedadExistente = propiedadesList.find((p) => p.rolSII === rolSII);
-            if (propiedadExistente) {
-                setPropiedad(propiedadExistente);
-            }
-        }
-    };
-
-    const handleSavePropiedad = (updatedPropiedad) => {
-        console.log("Datos actualizados en el formulario de Propiedad:", updatedPropiedad);
-        setPropiedad(updatedPropiedad); // Actualiza el estado
-    };
-
-
     const handleSubmit = async () => {
         console.log("Datos finales enviados al backend:", {
             descripcion,
@@ -180,7 +112,8 @@ function ExpedienteFormPage() {
         const nuevosErrores = {};
         if (!descripcion.trim()) nuevosErrores.descripcion = "La descripción es obligatoria.";
         if (!propietario) nuevosErrores.propietario = "Debes seleccionar un propietario.";
-        if (!propiedad) nuevosErrores.propiedad = "Debes seleccionar una propiedad.";
+        // if (!propiedad) nuevosErrores.propiedad = "Debes seleccionar una propiedad.";
+        if (!propiedad.rolSII.trim()) nuevosErrores.propiedad = "Debes completar los datos de la propiedad.";
 
         if (Object.keys(nuevosErrores).length > 0) {
             setErrores(nuevosErrores);
@@ -221,7 +154,7 @@ function ExpedienteFormPage() {
         <div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px" }}>
             <h2>Crear Expediente: {tipoNombre} - {subtipoNombre}</h2>
 
-            {/* Descripción */}
+
             <div>
                 <label>Descripción:</label>
                 <input
@@ -235,7 +168,7 @@ function ExpedienteFormPage() {
                 {errores.descripcion && (<p style={{ color: "red" }}>{errores.descripcion}</p>)}
             </div>
 
-            {/* Datos del Propietario */}
+
             <Desplegable title="Datos del Propietario">
                 <label>Seleccionar Propietario:</label>
                 <select
@@ -254,21 +187,15 @@ function ExpedienteFormPage() {
                 {esNuevoPropietario && <DatosPropietario propietario={propietario} onSave={setPropietario} />}
             </Desplegable>
 
-            {/* Datos de la Propiedad */}
-            <Desplegable title="Datos de la Propiedad">
-                <label>Seleccionar Propiedad:</label>
-                <select value={propiedadSeleccionada} onChange={(e) => handlePropiedadSeleccionada(e.target.value)}>
-                    <option value="">Seleccione una propiedad</option>
-                    {propiedadesList.map((p) => (
-                        <option key={p.rolSII} value={p.rolSII}>{p.rolSII} - {p.direccion}</option>
-                    ))}
-                    <option value="nueva">Crear nueva propiedad</option>
-                </select>
 
-                {esNuevaPropiedad && <DatosPropiedad propiedad={propiedad} onSave={setPropiedad} />}
+            <Desplegable title="Datos de la Propiedad">
+                <DatosPropiedad 
+                    propiedad={propiedad} 
+                    onSave={setPropiedad} 
+                />
             </Desplegable>
 
-            {/* Botones */}
+
             <div className="botones-der">
                 <button onClick={handleCancel}>Cancelar</button>
                 <button onClick={handleSubmit}>Crear Expediente</button>
@@ -279,3 +206,5 @@ function ExpedienteFormPage() {
 
 
 export default ExpedienteFormPage;
+
+

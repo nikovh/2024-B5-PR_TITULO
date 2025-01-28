@@ -60,7 +60,7 @@ const SolicitudArt124 = () => {
         <p style={{ marginTop: "40px" }}>
           DE: <strong>{`${propietario.nombres} ${propietario.apellidos}`}</strong>
         </p>
-        <p>PARA: <strong>Sr. Director de Obras Municipales de Santiago</strong></p>
+        <p>PARA: <strong>Sr. Director de Obras Municipales de {propiedad.comuna}</strong></p>
 
         <p style={{ marginTop: "20px" }}>
           Sr. Director de Obras, solicito a usted acoger a autorización transitoria según art. 124º de

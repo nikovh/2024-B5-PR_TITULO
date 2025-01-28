@@ -14,8 +14,8 @@ const DatosPropiedad = ({ propiedad, onSave }) => {
         m2: '',
         destino: '',
     });
-
-    const [isEditing, setIsEditing] = useState(false);
+    // Si no hay datos en `propiedad`, la edición debe estar activa
+    const [isEditing, setIsEditing] = useState(!propiedad);
     const [errores, setErrores] = useState({});
     const [errorBackend, setErrorBackend] = useState("");
 
@@ -35,6 +35,7 @@ const DatosPropiedad = ({ propiedad, onSave }) => {
                 m2: propiedad.m2 || '',
                 destino: propiedad.destino || '',
             });
+            setIsEditing(false); // Si hay datos, inicia bloqueado
         }
     }, [propiedad]);
 
@@ -151,7 +152,7 @@ const DatosPropiedad = ({ propiedad, onSave }) => {
                 ))}
 
                 {isEditing ? (
-                    <div>
+                    <div style={{ marginTop: "15px" }}>
                         <button type="submit" style={{ marginRight: "10px" }}>Guardar</button>
                         <button type="button" onClick={() => setIsEditing(false)}>Cancelar</button>
                     </div>
