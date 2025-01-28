@@ -137,7 +137,6 @@
 
 // module.exports = router;
 
-
 const express = require('express');
 const { getConnection, sql } = require('../db');
 const router = express.Router();
@@ -299,6 +298,34 @@ router.post('/', async (req, res) => {
 });
 
 
+// Actualizar propiedad por Expediente_id
+router.put('/:expedienteId', async (req, res) => {
+    const { expedienteId } = req.params;
+    const data = req.body;
+
+    try {
+        const pool = await getConnection();
+        const result = await pool.request()
+            .input('expedienteId', sql.Int, expedienteId)
+            .input('direccion', sql.VarChar, data.direccion)
+            .input('numero', sql.Int, data.numero)
+            .input('region', sql.VarChar, data.region)
+            .query(`
+                UPDATE Propiedades
+                SET direccion = @direccion, numero = @numero, region = @region
+                WHERE Expediente_id = @expedienteId
+            `);
+
+        if (result.rowsAffected[0] === 0) {
+            return res.status(404).json({ error: 'Propiedad no encontrada.' });
+        }
+
+        res.json({ message: 'Propiedad actualizada correctamente.' });
+    } catch (error) {
+        console.error('Error al actualizar propiedad:', error);
+        res.status(500).json({ error: 'Error al actualizar propiedad.' });
+    }
+});
 
 
 module.exports = router;

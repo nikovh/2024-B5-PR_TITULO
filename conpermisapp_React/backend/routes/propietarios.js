@@ -1,96 +1,3 @@
-// const express = require('express');
-// const { getConnection, sql } = require('../db');
-// const router = express.Router();
-
-// //GET /propietarios/
-// router.get('/', async (req, res) => {
-//     try {
-//         const pool = await getConnection();
-//         let query = 'SELECT * FROM Propietario';
-//         const request = pool.request();
-//         const result = await request.query(query);
-//         res.status(200).json(result.recordset);
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ error: 'Error al obtener propietarios' });
-//     }
-// });
-
-
-// //GET /propietarios/:rut
-// // Verificar si un propietario existe por su RUT
-// router.get('/:rut', async (req, res) => {
-//     const { rut } = req.params;
-
-//     try {
-//         const pool = await getConnection();
-//         const result = await pool.request()
-//             .input('rut', sql.VarChar, rut)
-//             .query(`
-//                 SELECT * 
-//                 FROM Propietario 
-//                 WHERE rut = @rut
-//             `);
-
-//         if (result.recordset.length === 0) {
-//             return res.status(404).json({ error: 'Propietario no encontrado' });
-//         }
-
-//         res.status(200).json(result.recordset[0]);
-//     } catch (error) {
-//         console.error('Error al obtener el propietario:', error);
-//         res.status(500).json({ error: 'Error al obtener el propietario' });
-//     }
-// });
-
-
-// // Crear un nuevo propietario
-// router.post('/', async (req, res) => {
-//     const { 
-//         rut, 
-//         nombres, 
-//         apellidos, 
-//         email, 
-//         telefono 
-//     } = req.body;
-
-//     if (!rut || !nombres) {
-//         return res.status(400).json({ error: 'El RUT y el nombre son obligatorios' });
-//     }
-
-//     try {
-//         const pool = await getConnection();
-
-//         // Insertar propietario
-//         const result = await pool.request()
-//             .input('rut', sql.VarChar, rut)
-//             .input('nombres', sql.VarChar, nombres)
-//             .input('apellidos', sql.VarChar, apellidos || null)
-//             .input('email', sql.VarChar, email || null)
-//             .input('telefono', sql.Int, telefono || null)
-//             .query(`
-//                 INSERT INTO Propietario (
-//                     rut, nombres, apellidos, email, telefono
-//                 ) VALUES (
-//                     @rut, @nombres, @apellidos, @email, @telefono
-//                 )
-//             `);
-
-//         res.status(201).json({ 
-//             message: 'Propietario creado exitosamente',
-//             propietario: result.recordset[0] });
-//     } catch (error) {
-//         console.error('Error al crear el propietario:', error);
-//         res.status(500).json({ error: 'Error al crear el propietario' });
-//     }
-// });
-
-
-
-
-
-// module.exports = router;
-
 const express = require('express');
 const { getConnection, sql } = require('../db');
 const router = express.Router();
@@ -162,41 +69,6 @@ router.post('/', async (req, res) => {
 });
 
 
-// router.delete("/:rut", async (req, res) => {
-//     const { rut } = req.params;
-
-//     try {
-//         const pool = await getConnection();
-
-//         // Verificar dependencias
-//         const dependencias = await pool
-//             .request()
-//             .input("rut", sql.VarChar, rut)
-//             .query("SELECT * FROM Expedientes WHERE Propietario_rut = @rut");
-
-//         if (dependencias.recordset.length > 0) {
-//             return res.status(400).json({
-//                 message: "No se puede eliminar el propietario porque tiene expedientes asociados.",
-//             });
-//         }
-
-//         // Eliminar el propietario
-//         const result = await pool
-//             .request()
-//             .input("rut", sql.VarChar, rut)
-//             .query("DELETE FROM Propietarios WHERE rut = @rut");
-
-//         if (result.rowsAffected[0] === 0) {
-//             return res.status(404).json({ message: "Propietario no encontrado." });
-//         }
-
-//         res.status(200).json({ message: "Propietario eliminado exitosamente." });
-//     } catch (error) {
-//         console.error("Error al eliminar el propietario:", error);
-//         res.status(500).json({ message: "Error al eliminar el propietario." });
-//     }
-// });
-
 router.delete("/:rut", async (req, res) => {
     const { rut } = req.params; 
 
@@ -215,6 +87,36 @@ router.delete("/:rut", async (req, res) => {
     } catch (error) {
         console.error("Error al eliminar el propietario:", error);
         res.status(500).json({ message: "Error al eliminar el propietario." });
+    }
+});
+
+
+// Actualizar propietario por RUT
+router.put('/:rut', async (req, res) => {
+    const { rut } = req.params;
+    const data = req.body;
+
+    try {
+        const pool = await getConnection();
+        const result = await pool.request()
+            .input('rut', sql.VarChar, rut)
+            .input('nombres', sql.VarChar, data.nombres)
+            .input('apellidos', sql.VarChar, data.apellidos)
+            .input('telefono', sql.VarChar, data.telefono)
+            .query(`
+                UPDATE Propietarios
+                SET nombres = @nombres, apellidos = @apellidos, telefono = @telefono
+                WHERE rut = @rut
+            `);
+
+        if (result.rowsAffected[0] === 0) {
+            return res.status(404).json({ error: 'Propietario no encontrado.' });
+        }
+
+        res.json({ message: 'Propietario actualizado correctamente.' });
+    } catch (error) {
+        console.error('Error al actualizar propietario:', error);
+        res.status(500).json({ error: 'Error al actualizar propietario.' });
     }
 });
 
