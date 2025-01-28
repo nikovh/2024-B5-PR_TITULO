@@ -1,7 +1,8 @@
 const express = require('express');
-const { getConnection, sql } = require('../db');
-
 const router = express.Router();
+const { getConnection, sql } = require("../db");
+
+
 
 // Consolidado: Obtener expedientes con filtro opcional por usuario_email o usuario_rut
 router.get('/', async (req, res) => {
@@ -63,43 +64,28 @@ router.get('/subtipo-expediente', async (req, res) => {
     }
 });
 
-// Obtener detalle de un expediente por ID
-// router.get('/:id/detalle', async (req, res) => {
-//     const { id } = req.params;
+//Obtener detalle de un expediente por ID
+router.get("/:id", async (req, res) => {
+    const { id } = req.params;
 
-//     try {
-//         const pool = await getConnection();
-//         const result = await pool.request()
-//             .input('id', sql.Int, id)
-//             .query(`
-//                 SELECT 
-//                     e.id AS expedienteId,
-//                     e.descripcion,
-//                     e.tipo,
-//                     e.subtipo,
-//                     e.EstadoExpediente_id,
-//                     ee.tipoEstado AS estadoNombre, 
-//                     e.fechaCreacion,
-//                     e.Usuario_email,
-//                     p.rut AS propietarioRut,
-//                     p.nombres AS propietarioNombres,
-//                     p.apellidos AS propietarioApellidos
-//                 FROM Expedientes e
-//                 LEFT JOIN Propietario p ON e.Propietario_rut = p.rut
-//                 LEFT JOIN EstadoExpediente ee ON e.EstadoExpediente_id = ee.id
-//                 WHERE e.id = @id
-//             `);
+    try {
+        const pool = await getConnection();
+        const result = await pool.request()
+            .input("id", sql.Int, id) 
+            .query("SELECT * FROM Expedientes WHERE id = @id"); 
 
-//         if (result.recordset.length === 0) {
-//             return res.status(404).json({ error: 'Expediente no encontrado' });
-//         }
+        if (result.recordset.length === 0) {
+            return res.status(404).json({ message: "Expediente no encontrado" });
+        }
 
-//         res.status(200).json(result.recordset[0]);
-//     } catch (error) {
-//         console.error('Error al obtener el detalle del expediente:', error);
-//         res.status(500).json({ error: 'Error al obtener el detalle del expediente.' });
-//     }
-// });
+        res.json(result.recordset[0]); 
+    } catch (error) {
+        console.error("Error al buscar el expediente:", error);
+        res.status(500).json({ message: "Error al buscar el expediente" });
+    }
+});
+
+
 
 // Obtener detalle de un expediente por ID
 router.get('/:id/detalle', async (req, res) => {

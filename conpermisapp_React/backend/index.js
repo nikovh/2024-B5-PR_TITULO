@@ -21,10 +21,6 @@ const propiedadesRoutes   = require('./routes/propiedades')
 
 
 // Usa las rutas en el servidor
-// para proteger TODAS las rutas de expedientes y formularios, agrega el middleware firebaseAuth
-// app.use('/expedientes', firebaseAuth, expedienteRoutes);
-// app.use('/formularios', firebaseAuth, formularioRoutes);
-
 app.use('/expedientes', expedienteRoutes);
 app.use('/formularios', formularioRoutes);
 app.use('/usuarios', usuariosRoutes);

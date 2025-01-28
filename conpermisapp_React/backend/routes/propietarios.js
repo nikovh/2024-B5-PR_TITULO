@@ -161,4 +161,62 @@ router.post('/', async (req, res) => {
     }
 });
 
+
+// router.delete("/:rut", async (req, res) => {
+//     const { rut } = req.params;
+
+//     try {
+//         const pool = await getConnection();
+
+//         // Verificar dependencias
+//         const dependencias = await pool
+//             .request()
+//             .input("rut", sql.VarChar, rut)
+//             .query("SELECT * FROM Expedientes WHERE Propietario_rut = @rut");
+
+//         if (dependencias.recordset.length > 0) {
+//             return res.status(400).json({
+//                 message: "No se puede eliminar el propietario porque tiene expedientes asociados.",
+//             });
+//         }
+
+//         // Eliminar el propietario
+//         const result = await pool
+//             .request()
+//             .input("rut", sql.VarChar, rut)
+//             .query("DELETE FROM Propietarios WHERE rut = @rut");
+
+//         if (result.rowsAffected[0] === 0) {
+//             return res.status(404).json({ message: "Propietario no encontrado." });
+//         }
+
+//         res.status(200).json({ message: "Propietario eliminado exitosamente." });
+//     } catch (error) {
+//         console.error("Error al eliminar el propietario:", error);
+//         res.status(500).json({ message: "Error al eliminar el propietario." });
+//     }
+// });
+
+router.delete("/:rut", async (req, res) => {
+    const { rut } = req.params; 
+
+    try {
+        const pool = await getConnection();
+        const result = await pool
+            .request()
+            .input("rut", sql.VarChar, rut)
+            .query("DELETE FROM Propietario WHERE rut = @rut");
+
+        if (result.rowsAffected[0] === 0) {
+            return res.status(404).json({ message: "Propietario no encontrado." });
+        }
+
+        res.status(200).json({ message: "Propietario eliminado exitosamente." });
+    } catch (error) {
+        console.error("Error al eliminar el propietario:", error);
+        res.status(500).json({ message: "Error al eliminar el propietario." });
+    }
+});
+
+
 module.exports = router;

@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 
-const CustomAccordion = ({ title, children, defaultExpanded }) => {
+const Desplegable = ({ title, children, defaultExpanded }) => {
   const [isOpen, setIsOpen] = useState(defaultExpanded || false);
 
-  const toggleAccordion = () => {
+  const alternarDesplegable = () => {
     setIsOpen(!isOpen);
   };
 
   return (
     <div style={{ marginBottom: "10px", border: "1px solid #ccc", borderRadius: "5px" }}>
       <div className={`desplegable ${isOpen ? "desplegable-abierto" : "desplegable-cerrado"}`}
-        onClick={toggleAccordion}
+        onClick={alternarDesplegable}
         style={{
           cursor: "pointer",
           padding: "10px",
@@ -26,4 +26,4 @@ const CustomAccordion = ({ title, children, defaultExpanded }) => {
   );
 };
 
-export default CustomAccordion;
+export default Desplegable;

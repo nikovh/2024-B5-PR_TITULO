@@ -220,4 +220,26 @@ router.post('/', async (req, res) => {
     }
 });
 
+
+router.delete("/:rut", async (req, res) => {
+    const { rut } = req.params; // Obtener el RUT desde los parámetros
+
+    try {
+        const pool = await getConnection();
+        const result = await pool
+            .request()
+            .input("rut", sql.VarChar, rut)
+            .query("DELETE FROM Usuario WHERE rut = @rut");
+
+        if (result.rowsAffected[0] === 0) {
+            return res.status(404).json({ message: "Arquitecto no encontrado." });
+        }
+
+        res.status(200).json({ message: "Arquitecto eliminado exitosamente." });
+    } catch (error) {
+        console.error("Error al eliminar el Arquitecto:", error);
+        res.status(500).json({ message: "Error al eliminar el Arquitecto." });
+    }
+});
+
 module.exports = router;
