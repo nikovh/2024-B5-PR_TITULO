@@ -11,9 +11,8 @@ import Administracion from "./components/Administracion";
 
 
 import SolicitudArt124 from "./components/Formularios/SolicitudArt124";
+import FormDeclaracionProp from "./components/Formularios/FormDeclaracionProp";
 import EditarElemento from "./components/EditarElemento";
-
-
 
 
 function App() {
@@ -47,8 +46,8 @@ function App() {
         <Route path="/detalle/:id" element={<ExpedienteDetalle />} />
         <Route path="/editar/:id" element={<EditarElemento/>} />
         
-        {/* provisorias */}
         <Route path="/124/:expedienteId" element={<SolicitudArt124 />} />
+        <Route path="/declaracion-prop/:expedienteId" element={<FormDeclaracionProp />} />
 
       </Routes>
     </BrowserRouter>
