@@ -1,7 +1,8 @@
 import React, { useState, useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase";
+import { auth, firestore } from "../firebase";
+import { doc, setDoc } from "firebase/firestore";
 import '../styles/Registro.css'
 
 
@@ -13,6 +14,7 @@ function Registro() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [patenteProfesional, setPatenteProfesional] = useState("");
+    // const [rol, setRol] = useState("usuario"); // rol predeterminado
     const [errors, setErrors] = useState('');
     const navigate = useNavigate();
 
@@ -90,6 +92,20 @@ function Registro() {
             const userId = userCredential.user.uid;
 
             console.log("Usuario registrado en Firebase con UID:", userId);
+
+            // guardar usuario en Firestore
+            await setDoc(doc(firestore, "users", userId), {
+                uid: userId,
+                rut,
+                nombres,
+                apellidos: apellidos || null,
+                telefono,
+                email, 
+                patenteProfesional: patenteProfesional || null,
+                rol: "usuario",
+                createdAt: new Date().toISOString(),
+            });
+            console.log("Usuario regisrado en Firestore correctamente");
 
             // Llamada al Backend
             const response = await fetch("http://localhost:4000/usuarios", {

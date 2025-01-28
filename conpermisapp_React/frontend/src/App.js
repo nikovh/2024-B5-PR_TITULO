@@ -22,8 +22,23 @@ function App() {
       <Routes>
 
         <Route path="/" element={<Login />} />
-        <Route path="/dashboard" element={ <AccesoProtegido> <Dashboard /> </AccesoProtegido> }/>
         <Route path="/registro" element={<Registro />} />
+        <Route 
+          path="/dashboard" 
+          element={ 
+            <AccesoProtegido allowedRoles={["usuario"]}>
+               <Dashboard /> 
+            </AccesoProtegido> 
+          }
+        />
+        <Route
+          path="/administracion"
+          element={
+            <AccesoProtegido allowedRoles={["admin"]}>
+              <Administracion />
+            </AccesoProtegido>
+          }
+        />
         <Route path="/expediente-form" element={<ExpedienteFormPage />} />
         <Route path="/expedientes" element={<ExpedienteManager />} />
         
@@ -34,7 +49,6 @@ function App() {
         
         {/* provisorias */}
         <Route path="/124/:expedienteId" element={<SolicitudArt124 />} />
-        <Route path="/administracion" element={<Administracion />} />
 
       </Routes>
     </BrowserRouter>
